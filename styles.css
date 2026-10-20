@@ -54,3 +54,10 @@
 .full-audit-empty{font-size:10px;color:#777985}
 @media(max-width:1100px){.sidebar{width:210px}.sidebar .nav{font-size:11px}main{margin-left:210px}}
 @media(max-width:680px){.sidebar{display:flex;position:relative;width:auto;height:auto;inset:auto;padding:13px 16px;flex-direction:row;align-items:center;gap:12px}.sidebar .brand{font-size:16px}.sidebar .mark{width:30px;height:30px;font-size:18px}.sidebar .nav-label,.sidebar-bottom{display:none}.sidebar nav{display:flex;margin-left:auto;gap:2px}.sidebar .nav{padding:8px;font-size:10px;gap:5px}.sidebar .nav-icon{width:auto}.sidebar .nav span:last-child{display:none}main{margin-left:0}.audit-context-actions{justify-content:flex-start}.full-audit-heading{flex-direction:column}.full-audit-scores{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+/* Copy and calculation explainer */
+.demo-explainer{max-width:760px;margin-top:12px!important;padding:12px 14px;background:#f0edff;border:1px solid #e3dcff;border-radius:8px;color:#62549a!important}
+.formula-note{margin-top:16px;padding:15px 16px;background:#faf9ff;border:1px solid #e7e1fb;border-radius:9px}
+.formula-note h3{margin:0 0 9px;font:700 12px var(--display)}
+.formula-note p{font-size:10px;line-height:1.7;color:#777985;margin:7px 0}
+.formula-note p strong{color:#363440}
