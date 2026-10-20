@@ -180,6 +180,11 @@
       fetchTime: lighthouse.fetchTime,
       note: "Risultati di laboratorio per una singola pagina. Non sono una certificazione né una previsione commerciale."
     };
+    try {
+      sessionStorage.setItem("valeyaAuditReport", JSON.stringify(lastReport));
+    } catch {
+      setStatus("Analisi completata, ma il browser non consente di conservare temporaneamente i risultati per Revenue Leak.", "error");
+    }
     results.scrollIntoView({ behavior: "smooth", block: "start" });
   }
   form.addEventListener("submit", async (event) => {
@@ -187,6 +192,7 @@
     let target;
     try { target = normalizeUrl(urlInput.value); }
     catch (error) { setStatus(error.message, "error"); return; }
+    try { sessionStorage.removeItem("valeyaAuditReport"); } catch {}
     const strategy = strategyInput.value;
     const apiKey = apiKeyInput.value.trim();
     runButton.disabled = true;
