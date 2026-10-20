@@ -44,15 +44,6 @@
     if (parsed.username || parsed.password) throw new Error("Per sicurezza, l'indirizzo non può contenere credenziali.");
     return parsed.href;
   }
-  /*function requestUrl(target, strategy, apiKey) {
-    const endpoint = new URL("https://www.googleapis.com/pagespeedonline/v5/runPagespeed");
-    endpoint.searchParams.set("url", target);
-    endpoint.searchParams.set("strategy", strategy);
-    endpoint.searchParams.set("locale", "it");
-    ["PERFORMANCE", "ACCESSIBILITY", "BEST_PRACTICES", "SEO"].forEach(category => endpoint.searchParams.append("category", category));
-    if (apiKey) endpoint.searchParams.set("key", apiKey);
-    return endpoint;
-  }*/
   function explainApiError(status, payload) {
     const apiMessage = payload?.error?.message || "";
     if (status === 400) return "Google non ha potuto analizzare questo indirizzo. Verifica che la pagina sia pubblica e raggiungibile. " + apiMessage;
@@ -172,7 +163,7 @@ async function runPageSpeed(target, strategy) {
     const issues = getIssues(data);
     $("issueCount").textContent = issues.length + (issues.length === 1 ? " controllo da verificare" : " controlli da verificare") + " · elenco ordinato per punteggio e priorità tecnica";
     if (!issues.length) {
-      $("issueList").innerHTML = '<div class="empty">Nessun problema con punteggio inferiore a 90/100 rilevato nei controlli disponibili. Questo non equivale a una certificazione di qualità.</div>';
+      $("issueList").innerHTML = '<div class="empty">Nei controlli disponibili non sono emersi rilievi da mostrare. Il risultato non è una certificazione e non garantisce che ogni pagina o funzione del sito sia priva di problemi.</div>';
       return issues;
     }
     $("issueList").innerHTML = issues.map(issue => {
@@ -243,9 +234,6 @@ async function runPageSpeed(target, strategy) {
     try { target = normalizeUrl(urlInput.value); }
     catch (error) { setStatus(error.message, "error"); return; }
     try { sessionStorage.removeItem("valeyaAuditReport"); } catch {}
-    /*const strategy = strategyInput.value;
-    const apiKey = apiKeyInput.value.trim();*/
-
     const strategy = strategyInput.value;
     
     runButton.disabled = true;
@@ -254,16 +242,15 @@ async function runPageSpeed(target, strategy) {
     results.classList.remove("show");
     setStatus("Stiamo analizzando la pagina con Google Lighthouse. L’operazione può richiedere fino a un minuto. Puoi lasciare aperta questa scheda.", "info");
     try {
-      //const data = await runPageSpeed(target, strategy, apiKey);
       const data = await runPageSpeed(target, strategy);
       
       renderReport(data, target, strategy);
-      setStatus("Analisi completata. I risultati sono stati generati da Google Lighthouse.", "success");
+      setStatus("Analisi completata. I punteggi e i controlli riportati sotto provengono da Google Lighthouse. Verifica i rilievi prima di pianificare gli interventi.", "success");
     } catch (error) {
       setStatus(error.message || "Si è verificato un errore imprevisto.", "error");
     } finally {
       runButton.disabled = false;
-      runButton.innerHTML = "Analizza sito <span aria-hidden=\"true\">→</span>";
+      runButton.innerHTML = "Avvia analisi gratuita <span aria-hidden=\"true\">→</span>";
       loading.classList.remove("show");
     }
   });
@@ -278,8 +265,5 @@ async function runPageSpeed(target, strategy) {
     URL.revokeObjectURL(url);
   });
   printButton.addEventListener("click", () => window.print());
-  /*$("clearKey").addEventListener("click", () => {
-    apiKeyInput.value = "";
-    setStatus("Chiave rimossa dal campo. Non viene salvata nel browser.", "info");
-  });*/
+
 })();
