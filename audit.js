@@ -4,7 +4,7 @@
   const form = $("auditForm");
   const urlInput = $("siteUrl");
   const strategyInput = $("strategy");
-  const apiKeyInput = $("apiKey");
+  //const apiKeyInput = $("apiKey");
   const runButton = $("runAudit");
   const statusBox = $("status");
   const loading = $("loading");
@@ -46,7 +46,7 @@
     if (parsed.username || parsed.password) throw new Error("Per sicurezza, l'indirizzo non può contenere credenziali.");
     return parsed.href;
   }
-  function requestUrl(target, strategy, apiKey) {
+  /*function requestUrl(target, strategy, apiKey) {
     const endpoint = new URL("https://www.googleapis.com/pagespeedonline/v5/runPagespeed");
     endpoint.searchParams.set("url", target);
     endpoint.searchParams.set("strategy", strategy);
@@ -54,7 +54,7 @@
     ["PERFORMANCE", "ACCESSIBILITY", "BEST_PRACTICES", "SEO"].forEach(category => endpoint.searchParams.append("category", category));
     if (apiKey) endpoint.searchParams.set("key", apiKey);
     return endpoint;
-  }
+  }*/
   function explainApiError(status, payload) {
     const apiMessage = payload?.error?.message || "";
     if (status === 400) return "Google non ha potuto analizzare questo indirizzo. Verifica che la pagina sia pubblica e raggiungibile. " + apiMessage;
@@ -63,7 +63,7 @@
     if (status === 500 || status === 502 || status === 503) return "Il servizio di analisi Google è temporaneamente indisponibile. Riprova più tardi.";
     return "Analisi non riuscita (HTTP " + status + "). " + apiMessage;
   }
-  async function runPageSpeed(target, strategy, apiKey) {
+  /*async function runPageSpeed(target, strategy, apiKey) {
     const endpoint = requestUrl(target, strategy, apiKey);
     let response;
     try {
@@ -76,7 +76,58 @@
     if (!response.ok) throw new Error(explainApiError(response.status, payload));
     if (!payload?.lighthouseResult?.categories) throw new Error("Google ha restituito una risposta incompleta. Riprova tra qualche minuto.");
     return payload;
+  }*/
+
+  
+async function runPageSpeed(target, strategy) {
+  const endpoint =
+    "https://valeya-audit-revenue-dashboard.vercel.app/api/audit";
+
+  let response;
+
+  try {
+    response = await fetch(endpoint, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json"
+      },
+      body: JSON.stringify({
+        url: target,
+        strategy
+      })
+    });
+  } catch {
+    throw new Error(
+      "Impossibile raggiungere il servizio Audit. Verifica la connessione e riprova."
+    );
   }
+
+  let payload;
+
+  try {
+    payload = await response.json();
+  } catch {
+    payload = {};
+  }
+
+  if (!response.ok) {
+    throw new Error(
+      payload?.error?.message ||
+      "Analisi non riuscita (HTTP " + response.status + ")."
+    );
+  }
+
+  if (!payload?.lighthouseResult?.categories) {
+    throw new Error(
+      "Google ha restituito una risposta incompleta. Riprova."
+    );
+  }
+
+  return payload;
+}
+
+  
   function getIssues(data) {
     const lighthouse = data.lighthouseResult;
     const audits = lighthouse.audits || {};
@@ -193,15 +244,20 @@
     try { target = normalizeUrl(urlInput.value); }
     catch (error) { setStatus(error.message, "error"); return; }
     try { sessionStorage.removeItem("valeyaAuditReport"); } catch {}
+    /*const strategy = strategyInput.value;
+    const apiKey = apiKeyInput.value.trim();*/
+
     const strategy = strategyInput.value;
-    const apiKey = apiKeyInput.value.trim();
+    
     runButton.disabled = true;
     runButton.textContent = "Analisi in corso…";
     loading.classList.add("show");
     results.classList.remove("show");
     setStatus("Google PageSpeed sta analizzando la pagina. L’operazione può richiedere fino a un minuto.", "info");
     try {
-      const data = await runPageSpeed(target, strategy, apiKey);
+      //const data = await runPageSpeed(target, strategy, apiKey);
+      const data = await runPageSpeed(target, strategy);
+      
       renderReport(data, target, strategy);
       setStatus("Analisi completata. I risultati sono stati generati da Google Lighthouse.", "success");
     } catch (error) {
@@ -223,8 +279,8 @@
     URL.revokeObjectURL(url);
   });
   printButton.addEventListener("click", () => window.print());
-  $("clearKey").addEventListener("click", () => {
+  /*$("clearKey").addEventListener("click", () => {
     apiKeyInput.value = "";
     setStatus("Chiave rimossa dal campo. Non viene salvata nel browser.", "info");
-  });
+  });*/
 })();
