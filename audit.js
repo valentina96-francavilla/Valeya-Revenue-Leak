@@ -53,23 +53,7 @@
     if (status === 500 || status === 502 || status === 503) return "Il servizio di analisi è temporaneamente indisponibile. Riprova più tardi.";
     return "Analisi non riuscita (HTTP " + status + "). " + apiMessage;
   }
-  /*async function runPageSpeed(target, strategy, apiKey) {
-    const endpoint = requestUrl(target, strategy, apiKey);
-    let response;
-    try {
-      response = await fetch(endpoint.toString(), { method: "GET", headers: { "Accept": "application/json" } });
-    } catch {
-      throw new Error("Impossibile raggiungere il servizio Google PageSpeed. Controlla la connessione e riprova.");
-    }
-    let payload;
-    try { payload = await response.json(); } catch { payload = {}; }
-    if (!response.ok) throw new Error(explainApiError(response.status, payload));
-    if (!payload?.lighthouseResult?.categories) throw new Error("Google ha restituito una risposta incompleta. Riprova tra qualche minuto.");
-    return payload;
-  }*/
-
-  
-async function runPageSpeed(target, strategy) {
+  async function runPageSpeed(target, strategy) {
   const endpoint =
     "https://valeya-audit-revenue-dashboard.vercel.app/api/audit";
 
