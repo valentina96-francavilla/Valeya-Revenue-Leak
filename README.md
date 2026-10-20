@@ -1,26 +1,50 @@
-# Valeya Revenue Leak
+# Audit Valeya
 
-Interactive concept demo for Valeya Intelligence: explore potential e-commerce revenue opportunities and prioritize possible interventions.
+Website audit prototype by Valeya Studio. The main page runs a Google PageSpeed Insights / Lighthouse analysis for a single public URL and returns Performance, Accessibility, Best Practices and SEO category scores, selected findings, an action-oriented summary, and export options.
 
-> **Transparency:** all inputs and estimates in this prototype are illustrative. It is not connected to real store analytics. The calculations are not forecasts, guaranteed outcomes, or profit estimates.
+## Live pages
 
-## Included
-- Responsive dashboard for desktop and mobile
-- Revenue, conversion rate, and average order value cards
-- Interactive scenario sliders
-- Prioritized opportunity panel
-- Italian UI and Valeya visual identity
-- Vanilla HTML, CSS, and JavaScript; no build step required
+- `index.html`: Audit Valeya
+- `revenue-leak.html`: preserved Revenue Leak interactive demo
+- `audit.css` and `audit.js`: responsive interface and client-side report rendering
+- `styles.css` and `app.js`: Revenue Leak demo assets
 
-## Run
-Open `index.html` in a browser. The project can also be served from this folder using `python3 -m http.server 8000`.
+## Run locally
 
-## Roadmap
-- [ ] Explain assumptions for each estimate in the interface
-- [ ] Import CSV data with validation and sample file
-- [ ] Separate revenue opportunity from margin/profit impact
-- [ ] Add scenario comparison and exportable report
-- [ ] Add tests for calculation logic
-- [ ] Validate the problem with prospective users before expanding scope
+Open `index.html` in a browser, or serve the repository with a local static server:
 
-**Status:** portfolio prototype. No customer data or external analytics integrations are used.
+```bash
+python3 -m http.server 8000
+```
+
+Then visit `http://localhost:8000`.
+
+## Current functionality
+
+- Run Lighthouse via the PageSpeed Insights API for a single public page.
+- Select mobile or desktop strategy.
+- Display the four Lighthouse category scores.
+- List selected audits with scores below 90/100, sorted by severity.
+- Generate a short, transparent priority summary.
+- Export a JSON report or print/save the report as PDF through the browser.
+- Optionally supply a Google PageSpeed Insights API key for quota and reliability. The key is not persisted in local storage or included in exported reports.
+
+## Important limitations
+
+- This is a prototype, not a complete crawler or a certification service.
+- It analyses one URL per run; it does not crawl every page of a site.
+- PageSpeed Insights is a third-party service and may impose quotas or return transient errors.
+- The optional API key is entered in the browser and sent to Google for the request. For a commercial multi-user product, move API calls to a backend and store a restricted key in server-side environment variables.
+- Lighthouse lab scores do not prove real-world conversion, ranking or revenue impact.
+- Accessibility and SEO scores are automated signals; important findings require manual verification.
+- No customer account, history database, analytics integration or billing is implemented.
+
+## Suggested next steps
+
+1. Add a server-side API proxy with rate limits and request validation.
+2. Add multi-page crawling with explicit crawl limits and robots.txt handling.
+3. Store historical reports only after defining privacy, retention and consent requirements.
+4. Add manual UX and conversion review as a separate, clearly labelled layer.
+5. Add test coverage for score parsing, priority logic, URL validation and API failures.
+
+**Status:** working MVP prototype; no customer analytics are connected.
