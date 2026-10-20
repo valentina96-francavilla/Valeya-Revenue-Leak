@@ -4,7 +4,6 @@
   const form = $("auditForm");
   const urlInput = $("siteUrl");
   const strategyInput = $("strategy");
-  //const apiKeyInput = $("apiKey");
   const runButton = $("runAudit");
   const statusBox = $("status");
   const loading = $("loading");
@@ -23,8 +22,7 @@
     performance: "Performance", accessibility: "Accessibilità",
     "best-practices": "Best practice", seo: "SEO"
   };
-  const priorityLabels = { high: "ALTA PRIORITÀ", medium: "DA MIGLIORARE", low: "APPROFONDIMENTO" };
-  const moneyless = (n) => String(n);
+  const priorityLabels = { high: "Priorità tecnica alta", medium: "Da migliorare", low: "Da approfondire" };
   const safe = (value) => String(value ?? "").replace(/[&<>"']/g, ch => ({
     "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
   }[ch]));
@@ -58,9 +56,10 @@
   function explainApiError(status, payload) {
     const apiMessage = payload?.error?.message || "";
     if (status === 400) return "Google non ha potuto analizzare questo indirizzo. Verifica che la pagina sia pubblica e raggiungibile. " + apiMessage;
-    if (status === 403) return "Google ha rifiutato la richiesta. Se usi una chiave API, verifica che PageSpeed Insights API sia attiva e che la chiave sia valida. " + apiMessage;
-    if (status === 429) return "Limite di richieste Google raggiunto. Attendi e riprova, oppure configura una chiave API con quota disponibile.";
-    if (status === 500 || status === 502 || status === 503) return "Il servizio di analisi Google è temporaneamente indisponibile. Riprova più tardi.";
+    if (status === 403) return "La richiesta non è stata autorizzata dal servizio di analisi. Riprova più tardi. " + apiMessage;
+    if (status === 429) return "È stato raggiunto il limite temporaneo di analisi. Attendi qualche minuto prima di riprovare.";
+    if (status === 413) return "La richiesta è troppo grande. Controlla l’indirizzo inserito.";
+    if (status === 500 || status === 502 || status === 503) return "Il servizio di analisi è temporaneamente indisponibile. Riprova più tardi.";
     return "Analisi non riuscita (HTTP " + status + "). " + apiMessage;
   }
   /*async function runPageSpeed(target, strategy, apiKey) {
@@ -171,7 +170,7 @@ async function runPageSpeed(target, strategy) {
   }
   function renderIssues(data) {
     const issues = getIssues(data);
-    $("issueCount").textContent = issues.length + (issues.length === 1 ? " criticità selezionata" : " criticità selezionate");
+    $("issueCount").textContent = issues.length + (issues.length === 1 ? " controllo da verificare" : " controlli da verificare") + " · elenco ordinato per punteggio e priorità tecnica";
     if (!issues.length) {
       $("issueList").innerHTML = '<div class="empty">Nessun problema con punteggio inferiore a 90/100 rilevato nei controlli disponibili. Questo non equivale a una certificazione di qualità.</div>';
       return issues;
@@ -201,7 +200,7 @@ async function runPageSpeed(target, strategy) {
       (weakest ? safe(weakest.label) + " ha il punteggio più basso (" + Math.round(weakest.score * 100) + "/100). Analizza prima i controlli associati." : "I punteggi di categoria non sono disponibili.") +
       '</p></div></div>' +
       '<div class="summary-item"><span class="summary-n">02</span><div><strong>Valuta prima le criticità alte</strong><p>' + high + ' controlli con punteggio inferiore a 50/100 e ' + medium + ' da migliorare. Verifica ogni rilievo prima di pianificare un intervento.</p></div></div>' +
-      '<div class="summary-item"><span class="summary-n">03</span><div><strong>Conferma sul sito reale</strong><p>I risultati Lighthouse sono test automatizzati di laboratorio. Non dimostrano da soli l’impatto su vendite, conversioni o posizionamento.</p></div></div>' +
+      '<div class="summary-item"><span class="summary-n">03</span><div><strong>Conferma sul sito reale</strong><p>I risultati Lighthouse sono test automatici. Non dimostrano da soli l’impatto su vendite, conversioni o posizione su Google.</p></div></div>' +
       '<div class="summary-callout"><strong>Perimetro del report</strong>Analisi ' + (strategy === "desktop" ? "desktop" : "mobile") + ' · ' + safe(date.toLocaleString("it-IT")) + '. È stata esaminata la singola pagina indicata, non l’intero sito.</div>';
   }
   function renderReport(data, target, strategy) {
@@ -234,7 +233,7 @@ async function runPageSpeed(target, strategy) {
     try {
       sessionStorage.setItem("valeyaAuditReport", JSON.stringify(lastReport));
     } catch {
-      setStatus("Analisi completata, ma il browser non consente di conservare temporaneamente i risultati per Revenue Leak.", "error");
+      setStatus("Analisi completata. Il browser non ha conservato temporaneamente i risultati per Revenue Leak, ma puoi comunque leggere ed esportare questo report.", "error");
     }
     results.scrollIntoView({ behavior: "smooth", block: "start" });
   }
@@ -253,7 +252,7 @@ async function runPageSpeed(target, strategy) {
     runButton.textContent = "Analisi in corso…";
     loading.classList.add("show");
     results.classList.remove("show");
-    setStatus("Google PageSpeed sta analizzando la pagina. L’operazione può richiedere fino a un minuto.", "info");
+    setStatus("Stiamo analizzando la pagina con Google Lighthouse. L’operazione può richiedere fino a un minuto. Puoi lasciare aperta questa scheda.", "info");
     try {
       //const data = await runPageSpeed(target, strategy, apiKey);
       const data = await runPageSpeed(target, strategy);
