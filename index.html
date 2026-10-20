@@ -4,8 +4,15 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="theme-color" content="#111218">
-  <meta name="description" content="Audit Valeya analizza performance, accessibilità, best practice e SEO di una pagina web con Google Lighthouse.">
-  <title>Audit Valeya · Analisi e priorità per il tuo sito</title>
+  <meta name="description" content="Esegui un audit SEO gratuito del tuo sito: analizza velocità, accessibilità, SEO tecnica e qualità della pagina. Ricevi punteggi e priorità chiare con Google Lighthouse.">
+  <meta name="robots" content="index,follow">
+  <link rel="canonical" href="https://audit.valeyastudio.it/">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Valeya Intelligence">
+  <meta property="og:title" content="Audit SEO gratuito e analisi sito web | Valeya">
+  <meta property="og:description" content="Scopri cosa migliorare nel tuo sito con un audit di performance, accessibilità, best practice e SEO tecnica.">
+  <meta property="og:url" content="https://audit.valeyastudio.it/">
+  <title>Audit SEO gratuito e analisi sito web | Valeya</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
@@ -18,8 +25,8 @@
       <p class="nav-label">WORKSPACE</p>
       <nav aria-label="Navigazione principale">
         <a class="nav active" href="#audit"><span class="ico">⌕</span><span>Audit del sito</span></a>
-        <a class="nav" href="#report"><span class="ico">▤</span><span>Report e priorità</span></a>
-        <a class="nav" href="revenue-leak.html"><span class="ico">↗</span><span>Revenue Leak demo</span></a>
+        <a class="nav" href="#report"><span class="ico">▤</span><span>Risultati e priorità</span></a>
+        <a class="nav" href="revenue-leak.html"><span class="ico">↗</span><span>Impatto commerciale</span></a>
       </nav>
       <div class="side-bottom">
         <div class="side-note"><strong>Meno supposizioni.<br>Priorità più chiare.</strong><p>Individua i controlli da approfondire e organizza il prossimo intervento.</p></div>
@@ -34,30 +41,31 @@
       <section class="hero">
         <div>
           <div class="eyebrow">WEBSITE INTELLIGENCE</div>
-          <h1>Il tuo sito, <span>sotto esame.</span></h1>
-          <p>Analizza una pagina web, individua le criticità tecniche e scegli da dove iniziare. Risultati basati su Google Lighthouse, non su punteggi inventati.</p>
+          <h1>Audit SEO e analisi del sito web, <span>con priorità chiare.</span></h1>
+          <p>Controlla velocità, accessibilità, best practice e SEO tecnica di una pagina. Scopri quali aspetti verificare per primi e quali interventi valutare.</p>
         </div>
-        <div class="hero-side"><strong>4 aree di controllo</strong>Performance · SEO · Accessibilità · Best practice</div>
+        <div class="hero-side"><strong>4 aree di analisi</strong>Velocità · SEO · Accessibilità · Qualità tecnica</div>
       </section>
       <section class="panel scan-panel" id="audit" aria-labelledby="scanTitle">
         <div class="section-head">
-          <div><h2 id="scanTitle">Avvia un nuovo audit</h2><p>Inserisci l'URL pubblico della pagina che vuoi analizzare.</p></div>
+          <div><h2 id="scanTitle">Analizza il tuo sito gratis</h2><p>Inserisci l'indirizzo pubblico della pagina da controllare. Non servono competenze tecniche.</p></div>
           <span class="step-tag">01 / ANALISI</span>
         </div>
         <form id="auditForm" novalidate>
           <div class="scan-form">
             <div class="field">
-              <label for="siteUrl">URL del sito</label>
-              <input id="siteUrl" name="url" type="url" placeholder="https://esempio.it" autocomplete="url" required aria-describedby="urlHelp">
+              <label for="siteUrl">Indirizzo della pagina web</label>
+              <input id="siteUrl" name="url" type="url" placeholder="https://www.esempio.it" autocomplete="url" required aria-describedby="urlHelp">
+              <small id="urlHelp">Inserisci una pagina pubblica, per esempio la homepage o una pagina prodotto.</small>
             </div>
             <div class="field">
-              <label for="strategy">Dispositivo</label>
+              <label for="strategy">Dispositivo da simulare</label>
               <select id="strategy" name="strategy">
                 <option value="mobile" selected>Mobile</option>
                 <option value="desktop">Desktop</option>
               </select>
             </div>
-            <button class="primary" id="runAudit" type="submit">Analizza sito <span aria-hidden="true">→</span></button>
+            <button class="primary" id="runAudit" type="submit">Avvia analisi gratuita <span aria-hidden="true">→</span></button>
           </div>
      <!--<div class="key-row">
             <div class="key-help" id="urlHelp">L'analisi viene eseguita tramite Google PageSpeed Insights.<br>Inserisci l'URL pubblico della pagina da controllare.</div>
@@ -74,29 +82,30 @@
       </section>
       <section id="results" class="results" aria-live="polite">
         <div class="results-head" id="report">
-          <div><div class="eyebrow">02 / RISULTATI</div><h2>Report dell'analisi</h2><p id="reportUrl"></p><p id="reportDate"></p></div>
+          <div><div class="eyebrow">02 / RISULTATI</div><h2>Risultati dell'audit SEO e tecnico</h2><p id="reportUrl"></p><p id="reportDate"></p></div>
           <div class="actions"><button class="secondary" id="exportReport" type="button">Esporta JSON ↓</button><button class="secondary" id="printReport" type="button">Stampa / salva PDF ↗</button><a class="primary" id="revenueLeakLink" href="revenue-leak.html">Approfondisci con Revenue Leak ↗</a></div>
         </div>
         <div id="scoreCards" class="scores" aria-label="Punteggi per categoria"></div>
         <div class="report-grid">
           <section class="panel issues-panel">
-            <h3 class="panel-title">Controlli da approfondire</h3>
-            <div class="panel-subtitle" id="issueCount">Problemi individuati dai test automatizzati</div>
+            <h3 class="panel-title">Problemi da verificare</h3>
+            <div class="panel-subtitle" id="issueCount">I controlli con il punteggio più basso, ordinati per priorità tecnica.</div>
             <div id="issueList" class="issue-list"></div>
           </section>
           <aside class="panel summary-panel">
-            <h3 class="panel-title">Da dove iniziare</h3>
-            <div class="panel-subtitle">Indicazioni basate sui risultati di questa scansione.</div>
+            <h3 class="panel-title">Da dove conviene iniziare</h3>
+            <div class="panel-subtitle">Una guida per scegliere il prossimo controllo, non una diagnosi automatica del business.</div>
             <div id="reportSummary" class="summary-list"></div>
           </aside>
         </div>
         <section class="panel method">
-          <h3>Come leggere questo report</h3>
-          <p>I punteggi sono quelli restituiti da Google Lighthouse per una singola pagina e il dispositivo selezionato. Un rilievo è un'indicazione da verificare, non una diagnosi completa. L'audit non scansiona automaticamente tutte le pagine, non accede ai dati privati di Analytics e non stima ricavi o conversioni. Per valutare UX, contenuti, tracciamento e impatto commerciale serve un'analisi aggiuntiva.</p>
+          <h3>Come leggere i punteggi e le priorità</h3>
+          <p><strong>90–100:</strong> risultato generalmente buono nei controlli eseguiti. <strong>50–89:</strong> ci sono aspetti da migliorare. <strong>0–49:</strong> il controllo segnala una criticità più marcata. Le etichette descrivono il punteggio tecnico del test, non la quantità di denaro perso né l'urgenza commerciale. Apri ogni rilievo e verifica se si applica davvero alla pagina prima di intervenire.</p>
+          <p><strong>Importante:</strong> questa analisi riguarda una sola pagina e il dispositivo selezionato. Non scansiona automaticamente l'intero sito, non legge i dati privati di Analytics e non calcola vendite o conversioni. Per capire l'esperienza degli utenti e l'effetto sulle vendite occorre confrontare questi risultati con dati reali.</p>
         </section>
-        <p class="footnote">Audit Valeya è un prototipo indipendente e non è affiliato a Google. I dati vengono elaborati dal servizio Google PageSpeed Insights secondo le relative condizioni e informative.</p>
+        <p class="footnote">Audit Valeya è uno strumento indipendente di analisi SEO e tecnica, non affiliato a Google. I risultati sono test automatici e possono variare tra una scansione e l’altra. I dati vengono elaborati tramite Google PageSpeed Insights secondo le relative condizioni e informative.</p>
       </section>
-      <p class="footnote">Audit Valeya · Prototype v0.1 · <a href="https://valeyastudio.it" style="color:inherit">Valeya Studio</a></p>
+      <p class="footnote">Audit SEO gratuito di Valeya Intelligence · <a href="https://valeyastudio.it" style="color:inherit">Valeya Studio</a></p>
     </main>
   </div>
   <div id="toast" class="toast" role="status"></div>
