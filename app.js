@@ -12,32 +12,98 @@ const money=new Intl.NumberFormat('it-IT',{style:'currency',currency:'EUR',maxim
   } catch { return; }
   if (!report || report.product !== "Audit Valeya" || !Array.isArray(report.scores)) return;
   const site = document.getElementById("auditSite");
-  try { site.textContent = new URL(report.url).hostname + " · " + (report.strategy === "mobile" ? "Mobile" : "Desktop") + " · " + new Date(report.generatedAt).toLocaleString("it-IT"); }
+  const strategyLabel = report.strategy === "mobile" ? "Mobile" : "Desktop";
+  try { site.textContent = new URL(report.url).hostname + " · " + strategyLabel + " · " + new Date(report.generatedAt).toLocaleString("it-IT"); }
   catch { site.textContent = "Risultati Audit Valeya"; }
-  const scores = document.getElementById("auditScores");
-  report.scores.forEach(item => {
-    const card = document.createElement("div");
-    card.className = "audit-score";
-    const label = document.createElement("span"); label.textContent = String(item.category || "Categoria");
-    const value = document.createElement("strong"); value.textContent = item.score == null ? "N/D" : String(item.score) + "/100";
-    card.append(label, value); scores.appendChild(card);
-  });
-  const issues = document.getElementById("auditIssues");
-  const topIssues = Array.isArray(report.issues) ? report.issues.slice(0, 3) : [];
-  if (!topIssues.length) {
-    const li = document.createElement("li"); li.textContent = "Nessuna criticità prioritaria restituita dai controlli selezionati. Questo non equivale a una certificazione."; issues.appendChild(li);
+  const renderScores = (container, compact) => {
+    container.replaceChildren();
+    report.scores.forEach(item => {
+      const card = document.createElement("div");
+      card.className = compact ? "audit-score" : "full-audit-score";
+      const label = document.createElement("span");
+      label.textContent = String(item.category || "Categoria");
+      const value = document.createElement("strong");
+      value.textContent = item.score == null ? "N/D" : String(item.score) + "/100";
+      card.append(label, value);
+      container.appendChild(card);
+    });
+  };
+  renderScores(document.getElementById("auditScores"), true);
+  const issues = Array.isArray(report.issues) ? report.issues : [];
+  const priorityLabel = issue => issue.priority === "high" ? "Priorità alta" : issue.priority === "medium" ? "Da migliorare" : "Approfondimento";
+  const compactIssues = document.getElementById("auditIssues");
+  compactIssues.replaceChildren();
+  if (!issues.length) {
+    const li = document.createElement("li");
+    li.textContent = "Nessuna criticità prioritaria restituita dai controlli selezionati. Questo non equivale a una certificazione.";
+    compactIssues.appendChild(li);
   } else {
-    topIssues.forEach(issue => {
+    issues.slice(0, 3).forEach(issue => {
       const li = document.createElement("li");
-      const priority = issue.priority === "high" ? "Priorità alta" : issue.priority === "medium" ? "Da migliorare" : "Approfondimento";
-      li.textContent = (issue.title || issue.id || "Controllo") + " · " + priority;
-      issues.appendChild(li);
+      li.textContent = (issue.title || issue.id || "Controllo") + " · " + priorityLabel(issue);
+      compactIssues.appendChild(li);
+    });
+  }
+  const openButton = document.getElementById("openFullAudit");
+  const fullReport = document.getElementById("fullAuditReport");
+  openButton.hidden = false;
+  const closeFullReport = () => {
+    fullReport.hidden = true;
+    openButton.textContent = "Apri report completo Audit ↗";
+    openButton.setAttribute("aria-expanded", "false");
+  };
+  openButton.setAttribute("aria-expanded", "false");
+  openButton.addEventListener("click", () => {
+    const opening = fullReport.hidden;
+    fullReport.hidden = !opening;
+    openButton.textContent = opening ? "Nascondi report completo ↑" : "Apri report completo Audit ↗";
+    openButton.setAttribute("aria-expanded", String(opening));
+    if (opening) fullReport.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  });
+  document.getElementById("closeFullAudit").addEventListener("click", closeFullReport);
+  document.getElementById("fullAuditMeta").textContent =
+    (report.url || "URL non disponibile") + " · " + strategyLabel +
+    (report.generatedAt ? " · Analisi del " + new Date(report.generatedAt).toLocaleString("it-IT") : "") +
+    (report.lighthouseVersion ? " · Lighthouse " + report.lighthouseVersion : "");
+  renderScores(document.getElementById("fullAuditScores"), false);
+  const fullIssues = document.getElementById("fullAuditIssues");
+  fullIssues.replaceChildren();
+  if (!issues.length) {
+    const empty = document.createElement("p");
+    empty.className = "full-audit-empty";
+    empty.textContent = "Il report salvato non contiene criticità selezionate.";
+    fullIssues.appendChild(empty);
+  } else {
+    issues.forEach((issue, index) => {
+      const item = document.createElement("article");
+      item.className = "full-audit-issue";
+      const heading = document.createElement("div");
+      heading.className = "full-audit-issue-heading";
+      const title = document.createElement("strong");
+      title.textContent = (index + 1) + ". " + (issue.title || issue.id || "Controllo");
+      const priority = document.createElement("span");
+      priority.className = "full-audit-priority " + (issue.priority || "low");
+      priority.textContent = priorityLabel(issue);
+      heading.append(title, priority);
+      item.appendChild(heading);
+      if (issue.description) {
+        const description = document.createElement("p");
+        description.textContent = issue.description;
+        item.appendChild(description);
+      }
+      if (issue.displayValue) {
+        const metric = document.createElement("small");
+        metric.textContent = issue.displayValue;
+        item.appendChild(metric);
+      }
+      fullIssues.appendChild(item);
     });
   }
   panel.hidden = false;
-  const clear = document.getElementById("clearAuditContext");
-  clear.addEventListener("click", () => {
+  document.getElementById("clearAuditContext").addEventListener("click", () => {
     try { sessionStorage.removeItem("valeyaAuditReport"); } catch {}
     panel.hidden = true;
+    fullReport.hidden = true;
+    openButton.hidden = true;
   });
 })();
