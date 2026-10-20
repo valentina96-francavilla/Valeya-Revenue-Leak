@@ -13,3 +13,44 @@
 .audit-score span,.audit-score strong{display:block}.audit-score span{font-size:9px;color:#777985}.audit-score strong{font:700 19px var(--display);margin-top:7px;color:#292735}
 .audit-context-detail{border-top:1px solid #eeeef3;margin-top:17px;padding-top:15px}.audit-context-detail>strong{font-size:11px}.audit-context-detail ul{padding-left:18px;margin:9px 0 0;color:#666875;font-size:10px;line-height:1.8}.audit-disclaimer{font-size:9px;line-height:1.6;color:#92939e;background:#faf9fd;padding:10px 12px;border-radius:7px;margin:15px 0 0}
 @media(max-width:680px){.audit-context{padding:15px;margin-top:14px}.audit-context-head{flex-direction:column}.audit-scores{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+/* Navigazione condivisa con Audit Valeya */
+.sidebar{width:244px;padding:24px 17px}
+.brand{font-size:18px;letter-spacing:-.6px}
+.brand small{display:block;margin-top:1px;letter-spacing:.2px}
+.mark{width:34px;height:34px;border-radius:10px;font-size:20px}
+.sidebar .nav-label{margin:37px 10px 10px;padding:0}
+.sidebar nav{display:block}
+.sidebar .nav{display:flex;align-items:center;gap:11px;padding:11px 12px;margin:3px 0;border-radius:8px;font-size:12px}
+.sidebar .nav-icon{width:18px;text-align:center;color:#a99bff}
+.sidebar .side-card{margin-top:auto;background:linear-gradient(145deg,#262332,#17181e);border:1px solid #34313f;border-radius:11px;padding:14px}
+.sidebar .side-card h3{margin:0;font:700 13px/1.45 var(--display)}
+.sidebar .side-card p{margin:7px 0 0;font-size:11px;line-height:1.6}
+.sidebar .sidebar-bottom{margin-top:auto}
+.audit-context-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+.audit-open-report{border:1px solid #dcd5ff!important;background:#f0edff!important;color:#624bd8!important;border-radius:7px;padding:9px 11px;font:700 9px var(--font);cursor:pointer}
+.audit-open-report:hover{background:#e7e1ff!important}
+.full-audit-report{margin-top:18px;padding:18px;border:1px solid #e8e2ff;background:#fcfbff;border-radius:10px}
+.full-audit-heading{display:flex;justify-content:space-between;align-items:flex-start;gap:14px}
+.full-audit-heading>div>small{font-size:9px;letter-spacing:1.1px;font-weight:700;color:#6e57df}
+.full-audit-heading h3{font:700 15px var(--display);margin:6px 0}
+.full-audit-heading p{font-size:10px;color:#858692;overflow-wrap:anywhere;margin:0}
+.full-audit-heading button{border:1px solid #e6e6ee;background:white;color:#777985;border-radius:7px;padding:8px 10px;font:600 9px var(--font);cursor:pointer}
+.full-audit-scores{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;margin:15px 0}
+.full-audit-score{padding:11px;background:white;border:1px solid #efedf6;border-radius:8px;min-width:0}
+.full-audit-score span,.full-audit-score strong{display:block}
+.full-audit-score span{font-size:9px;color:#777985}
+.full-audit-score strong{font:700 18px var(--display);margin-top:6px}
+.full-audit-report h4{font-size:11px;margin:16px 0 9px}
+.full-audit-issues{display:grid;gap:8px}
+.full-audit-issue{padding:12px;background:white;border:1px solid #ececf2;border-radius:8px}
+.full-audit-issue-heading{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.full-audit-issue-heading strong{font-size:10px;line-height:1.5}
+.full-audit-priority{font-size:8px;font-weight:800;white-space:nowrap;border-radius:5px;padding:4px 6px;background:#effaf4;color:#176d49}
+.full-audit-priority.high{background:#fff0f1;color:#b72f3d}
+.full-audit-priority.medium{background:#fff6e8;color:#985b08}
+.full-audit-issue p{font-size:10px;line-height:1.6;color:#737582;margin:7px 0}
+.full-audit-issue>small{font-size:9px;color:#898a96}
+.full-audit-empty{font-size:10px;color:#777985}
+@media(max-width:1100px){.sidebar{width:210px}.sidebar .nav{font-size:11px}main{margin-left:210px}}
+@media(max-width:680px){.sidebar{display:flex;position:relative;width:auto;height:auto;inset:auto;padding:13px 16px;flex-direction:row;align-items:center;gap:12px}.sidebar .brand{font-size:16px}.sidebar .mark{width:30px;height:30px;font-size:18px}.sidebar .nav-label,.sidebar-bottom{display:none}.sidebar nav{display:flex;margin-left:auto;gap:2px}.sidebar .nav{padding:8px;font-size:10px;gap:5px}.sidebar .nav-icon{width:auto}.sidebar .nav span:last-child{display:none}main{margin-left:0}.audit-context-actions{justify-content:flex-start}.full-audit-heading{flex-direction:column}.full-audit-scores{grid-template-columns:repeat(2,minmax(0,1fr))}}
