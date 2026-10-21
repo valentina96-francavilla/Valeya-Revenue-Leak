@@ -140,9 +140,15 @@ if(!state.report&&plan.auditIssue)state.report={product:"Audit Valeya",reportId:
   function renderSavedPlans(){
     const plans=readPlans(),box=$("rl-saved-plans-list");
     if(!plans.length){box.innerHTML='<div class="rl-empty">Nessuna scheda salvata. Completa una scheda e premi “Salva scheda”.</div>';return;}
-    box.innerHTML=plans.map(p=>'<article class="rl-saved-plan"><div><strong>'+escapeHTML(p.problem||"Problema senza titolo")+'</strong><p>'+escapeHTML(p.kpiLabel||kpiLabels[p.kpi]||"Metrica non definita")+' · '+escapeHTML(({ "da-pianificare":"Da pianificare","pianificato":"Pianificato","in-corso":"In corso","implementato":"Implementato","in-attesa-verifica":"In attesa della verifica","verificato":"Verificato","da-rivedere":"Da rivedere","archiviato":"Archiviato"})[p.interventionStatus||p.status]||"Da pianificare")+'</p><small>Aggiornata '+escapeHTML(p.updatedAt?new Date(p.updatedAt).toLocaleString("it-IT"):"data non disponibile")+'</small></div><div class="rl-saved-plan-actions"><button type="button" class="rl-secondary" data-open-plan="'+escapeHTML(p.planId)+'">Apri</button><button type="button" class="rl-secondary" data-delete-plan="'+escapeHTML(p.planId)+'">Elimina</button></div></article>').join("");
+    box.innerHTML=plans.map(p=>'<article class="rl-saved-plan"><div><strong>'+escapeHTML(p.problem||"Problema senza titolo")+'</strong><p>'+escapeHTML(p.kpiLabel||kpiLabels[p.kpi]||"Metrica non definita")+' · '+escapeHTML(({ "da-pianificare":"Da pianificare","pianificato":"Pianificato","in-corso":"In corso","implementato":"Implementato","in-attesa-verifica":"In attesa della verifica","verificato":"Verificato","da-rivedere":"Da rivedere","archiviato":"Archiviato"})[p.interventionStatus||p.status]||"Da pianificare")+'</p><small>Aggiornata '+escapeHTML(p.updatedAt?new Date(p.updatedAt).toLocaleString("it-IT"):"data non disponibile")+'</small></div><div class="rl-saved-plan-actions"><button type="button" class="rl-secondary" data-open-plan="'+escapeHTML(p.planId)+'">Apri</button><button type="button" class="rl-secondary" data-delete-plan="'+escapeHTML(p.planId)+'">Archivia</button></div></article>').join("");
     box.querySelectorAll("[data-open-plan]").forEach(btn=>btn.addEventListener("click",()=>{const p=readPlans().find(x=>x.planId===btn.dataset.openPlan);if(p){state.dbIssue={id:p.planId};restorePlan(p);}}));
-    box.querySelectorAll("[data-delete-plan]").forEach(btn=>btn.addEventListener("click",()=>{if(!confirm("Eliminare questa scheda salvata da questo browser?"))return;writePlans(readPlans().filter(p=>p.planId!==btn.dataset.deletePlan));renderSavedPlans();}));
+    box.querySelectorAll("[data-delete-plan]").forEach(btn=>btn.addEventListener("click",async()=>{
+      if(!confirm("Archiviare questa scheda nel workspace?"))return;
+      try{
+        await window.ValeyaIntelligence.call("updateIssue",{body:{issueId:btn.dataset.deletePlan,updates:{state:"archived"}}});
+        writePlans(readPlans().filter(p=>p.planId!==btn.dataset.deletePlan));renderSavedPlans();
+      }catch(error){alert("Impossibile archiviare la scheda: "+error.message);}
+    }));
   }
   function planFromIssue(issue,measurements=[]){
     const decision=issue.decision||{},intervention=issue.intervention||{};
@@ -156,7 +162,9 @@ if(!state.report&&plan.auditIssue)state.report={product:"Audit Valeya",reportId:
       if(!window.ValeyaIntelligence?.getSession()?.access_token){$("rl-saved-plans-list").innerHTML='<div class="rl-empty">Accedi al workspace per caricare e salvare le schede sincronizzate.</div>';return;}
       if(requestedIssue){
         const result=await window.ValeyaIntelligence.call("getIssue",{method:"GET",query:{id:requestedIssue}});
-        state.dbIssue=result.issue;const plan=planFromIssue(result.issue,result.measurements);state.plans=[plan,...state.plans];restorePlan(plan);state.planId=result.issue.id;state.scanId=result.issue.source_scan_id||null;return;
+        state.dbIssue=result.issue;const plan=planFromIssue(result.issue,result.measurements);state.plans=[plan,...state.plans];restorePlan(plan);state.planId=result.issue.id;state.scanId=result.issue.source_scan_id||null;
+        if(plan.auditIssue&&!plan.action){const rec=recommendation(plan.auditIssue);$("rl-action").value=rec.action;$("rl-source").value=rec.source;$("rl-kpi").value=rec.kpi;if(rec.kpi==="technical")$("rl-kpi-direction").value="decrease";}
+        return;
       }
       if(requestedScan){
         const result=await window.ValeyaIntelligence.call("getScan",{method:"GET",query:{id:requestedScan}});
