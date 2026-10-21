@@ -99,26 +99,24 @@
     if(!window.ValeyaIntelligence?.getSession()?.access_token){$("rl-saved").hidden=true;alert("Accedi al workspace per salvare la scheda in modo persistente.");return;}
     const draft=collect();
     try{
+      const stateMap={"da-pianificare":"open","pianificato":"planned","in-corso":"in_progress","implementato":"completed","in-attesa-verifica":"awaiting_measurement","verificato":"verified","da-rivedere":"open","archiviato":"archived"};
+      const payload={title:draft.problem,description:draft.auditIssue?.description||draft.problem,url:draft.reportUrl||draft.site||null,category:draft.auditIssue?.category||"other",severity:draft.auditIssue?.priority||"medium",evidence:draft.auditIssue?.evidence||{},state:stateMap[draft.interventionStatus]||"open",decision:{action:draft.action,source:draft.source,window:draft.window,kpi:draft.kpi,kpiLabel:draft.kpiLabel,kpiDirection:draft.kpiDirection,kpiUnit:draft.kpiUnit,baseline:draft.before,beforePeriod:draft.beforePeriod,beforePeriodStart:draft.beforePeriodStart,beforePeriodEnd:draft.beforePeriodEnd,suggestedAction:draft.auditIssue?.verificationSteps||[],priorityRationale:draft.auditIssue?.priorityRationale||""},intervention:{status:draft.interventionStatus,owner:draft.owner,plannedDate:draft.plannedDate,implementedDate:draft.implementedDate,workNotes:draft.workNotes},kpi_key:draft.kpi,kpi_unit:draft.kpiUnit,kpi_direction:draft.kpiDirection,baseline:draft.before===""?null:Number(draft.before),target:draft.target===""?null:Number(draft.target),review_date:draft.reviewDate||null};
+      if(state.planId&&state.dbIssue){
+        const saved=await window.ValeyaIntelligence.call("updateIssue",{body:{issueId:state.planId,updates:payload}});
+        state.dbIssue=saved.issue||state.dbIssue;
+      } else {
+        const saved=await window.ValeyaIntelligence.call("createIssue",{body:{issue:{...payload,source_scan_id:state.scanId||null,source_finding_key:draft.auditIssueId||null}}});
+        state.planId=saved.issue.id;state.dbIssue=saved.issue;
+      }
       const previous=state.measurements||[];
-      let newMeasurement=null;
       if(draft.after!==""&&Number.isFinite(Number(draft.after))){
         const signature=[draft.afterPeriodStart,draft.afterPeriodEnd,draft.afterPeriod,draft.after,draft.notes].join("|");
         if(!previous.some(m=>m.signature===signature)){
           const result=await window.ValeyaIntelligence.call("addMeasurement",{body:{issueId:state.planId,measurement:{value:Number(draft.after),kpi_key:draft.kpi,unit:draft.kpiUnit,measured_at:new Date().toISOString(),period_start:draft.afterPeriodStart||null,period_end:draft.afterPeriodEnd||null,notes:draft.notes}}});
-          newMeasurement={measurementId:result.measurement.id,signature,period:draft.afterPeriodStart&&draft.afterPeriodEnd?draft.afterPeriodStart+" – "+draft.afterPeriodEnd:(draft.afterPeriod||""),value:Number(draft.after),unit:draft.kpiUnit||"",source:draft.source,notes:draft.notes||"",recordedAt:result.measurement.measured_at};
-          state.measurements.push(newMeasurement);
+          state.measurements.push({measurementId:result.measurement.id,signature,period:draft.afterPeriodStart&&draft.afterPeriodEnd?draft.afterPeriodStart+" – "+draft.afterPeriodEnd:(draft.afterPeriod||""),value:Number(draft.after),unit:draft.kpiUnit||"",source:draft.source,notes:draft.notes||"",recordedAt:result.measurement.measured_at});
         }
       }
-      const data=collect();data.measurements=state.measurements;
-      const stateMap={"da-pianificare":"open","pianificato":"planned","in-corso":"in_progress","implementato":"completed","in-attesa-verifica":"awaiting_measurement","verificato":"verified","da-rivedere":"open","archiviato":"archived"};
-      const payload={title:data.problem,description:data.auditIssue?.description||data.problem,url:data.reportUrl||data.site||null,category:data.auditIssue?.category||"other",severity:data.auditIssue?.priority||"medium",evidence:data.auditIssue?.evidence||{},state:stateMap[data.interventionStatus]||"open",decision:{action:data.action,source:data.source,window:data.window,kpi:data.kpi,kpiLabel:data.kpiLabel,kpiDirection:data.kpiDirection,kpiUnit:data.kpiUnit,baseline:data.before,beforePeriod:data.beforePeriod,beforePeriodStart:data.beforePeriodStart,beforePeriodEnd:data.beforePeriodEnd},intervention:{status:data.interventionStatus,owner:data.owner,plannedDate:data.plannedDate,implementedDate:data.implementedDate,workNotes:data.workNotes},kpi_key:data.kpi,kpi_unit:data.kpiUnit,kpi_direction:data.kpiDirection,baseline:data.before===""?null:Number(data.before),target:data.target===""?null:Number(data.target),review_date:data.reviewDate||null};
-      let saved;
-      if(state.planId&&state.dbIssue){saved=await window.ValeyaIntelligence.call("updateIssue",{body:{issueId:state.planId,updates:payload}});state.dbIssue=saved.issue||state.dbIssue;}
-      else {
-        saved=await window.ValeyaIntelligence.call("createIssue",{body:{issue:{...payload,source_scan_id:state.scanId||null,source_finding_key:data.auditIssueId||null}}});
-        state.planId=saved.issue.id;state.dbIssue=saved.issue;
-      }
-      data.planId=state.planId;data.updatedAt=new Date().toISOString();data.measurements=state.measurements;
+      const data=collect();data.planId=state.planId;data.updatedAt=new Date().toISOString();data.measurements=state.measurements;
       state.plans=[data,...state.plans.filter(p=>p.planId!==data.planId)];
       state.saved=true;$("rl-saved").hidden=false;$("rl-saved").textContent="Scheda salvata nel workspace. Le misurazioni sono state registrate nello storico.";
       renderSavedPlans();renderMeasurementHistory();
@@ -130,10 +128,7 @@
   }
   function restorePlan(plan){
     state.planId=plan.planId||null;state.report=null;state.selectedIssue=null;state.measurements=Array.isArray(plan.measurements)?plan.measurements:[];state.kpiDirection=plan.kpiDirection||"increase";state.kpiUnit=plan.kpiUnit||"";
-    if(plan.reportId){
-      try{const raw=localStorage.getItem("valeyaAuditReport:"+plan.reportId);if(raw)state.report=JSON.parse(raw);}catch{}
-    }
-    if(!state.report&&plan.auditIssue)state.report={product:"Audit Valeya",reportId:plan.reportId||null,scanId:plan.scanId||null,url:plan.reportUrl||plan.site||"",generatedAt:plan.reportGeneratedAt||null,scores:[],issues:[plan.auditIssue]};
+if(!state.report&&plan.auditIssue)state.report={product:"Audit Valeya",reportId:plan.reportId||null,scanId:plan.scanId||null,url:plan.reportUrl||plan.site||"",generatedAt:plan.reportGeneratedAt||null,scores:[],issues:[plan.auditIssue]};
     if(state.report&&plan.auditIssueId)state.selectedIssue=(state.report.issues||[]).findIndex(i=>i.id===plan.auditIssueId);
     if(state.selectedIssue<0)state.selectedIssue=null;
     $("rl-business").value=plan.businessType||"local";$("rl-goal").value=plan.goal||"leads";$("rl-manual-issue").value=plan.auditIssue?"":(plan.problem||"");
@@ -146,7 +141,7 @@
     const plans=readPlans(),box=$("rl-saved-plans-list");
     if(!plans.length){box.innerHTML='<div class="rl-empty">Nessuna scheda salvata. Completa una scheda e premi “Salva scheda”.</div>';return;}
     box.innerHTML=plans.map(p=>'<article class="rl-saved-plan"><div><strong>'+escapeHTML(p.problem||"Problema senza titolo")+'</strong><p>'+escapeHTML(p.kpiLabel||kpiLabels[p.kpi]||"Metrica non definita")+' · '+escapeHTML(({ "da-pianificare":"Da pianificare","pianificato":"Pianificato","in-corso":"In corso","implementato":"Implementato","in-attesa-verifica":"In attesa della verifica","verificato":"Verificato","da-rivedere":"Da rivedere","archiviato":"Archiviato"})[p.interventionStatus||p.status]||"Da pianificare")+'</p><small>Aggiornata '+escapeHTML(p.updatedAt?new Date(p.updatedAt).toLocaleString("it-IT"):"data non disponibile")+'</small></div><div class="rl-saved-plan-actions"><button type="button" class="rl-secondary" data-open-plan="'+escapeHTML(p.planId)+'">Apri</button><button type="button" class="rl-secondary" data-delete-plan="'+escapeHTML(p.planId)+'">Elimina</button></div></article>').join("");
-    box.querySelectorAll("[data-open-plan]").forEach(btn=>btn.addEventListener("click",()=>{const p=readPlans().find(x=>x.planId===btn.dataset.openPlan);if(p)restorePlan(p);}));
+    box.querySelectorAll("[data-open-plan]").forEach(btn=>btn.addEventListener("click",()=>{const p=readPlans().find(x=>x.planId===btn.dataset.openPlan);if(p){state.dbIssue={id:p.planId};restorePlan(p);}}));
     box.querySelectorAll("[data-delete-plan]").forEach(btn=>btn.addEventListener("click",()=>{if(!confirm("Eliminare questa scheda salvata da questo browser?"))return;writePlans(readPlans().filter(p=>p.planId!==btn.dataset.deletePlan));renderSavedPlans();}));
   }
   function planFromIssue(issue,measurements=[]){
