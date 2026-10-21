@@ -90,6 +90,7 @@ create table if not exists public.revenue_leak_measurements (
   kpi_key text,
   observed_value numeric not null,
   unit text,
+  period_label text,
   measured_at timestamptz not null default now(),
   period_start date,
   period_end date,
