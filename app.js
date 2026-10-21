@@ -17,6 +17,7 @@ function render(){
  el('targetOut').textContent=percent(d.v.target);
  el('orderOut').textContent=money.format(d.v.order);
  el('revenue').textContent=money.format(d.revenue);
+ el('revenueExplain').textContent=integer.format(d.currentOrders)+' ordini stimati × '+money.format(d.v.order)+' di valore medio';
  el('cr').textContent=percent(d.v.conversion);
  el('crbar').style.width=Math.min(100,d.v.conversion/5*100)+'%';
  el('aov').textContent=money.format(d.v.order);
@@ -24,7 +25,8 @@ function render(){
  el('convvalue').innerHTML='+ '+money.format(d.uplift)+'<small>/ mese nello scenario</small>';
  el('aovvalue').innerHTML='Da misurare<small>con dati reali</small>';
  el('cartvalue').innerHTML='Da misurare<small>con dati reali</small>';
- el('simResult').textContent='+ '+money.format(d.uplift);
+ el('simResult').textContent=(d.uplift>0?'+ ':'')+money.format(d.uplift);
+ el('resultExplain').textContent=d.v.target>d.v.conversion?'Scenario ipotetico se raggiungi l’obiettivo, mantenendo stabili visite e valore medio ordine.':'L’obiettivo non supera il tasso attuale: il simulatore non stima ricavi aggiuntivi positivi.';
 }
 Object.values(c).forEach(input=>input.addEventListener('input',render));
 el('update').addEventListener('click',()=>{
