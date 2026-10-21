@@ -113,13 +113,22 @@ el('reset').addEventListener('click',()=>{
       plans.innerHTML = issues.length ? issues.map((issue,index) => {
         const rec = recommendation(issue);
         const priority = issue.priority === "high" ? "Alta" : issue.priority === "medium" ? "Media" : "Da verificare";
-        return '<article class="audit-action-card"><div class="audit-action-card-top"><span class="audit-action-number">0'+(index+1)+'</span><span class="audit-action-priority '+escapeHTML(issue.priority || "low")+'">Priorità tecnica: '+priority+'</span></div><h4>'+escapeHTML(issue.title)+'</h4><p class="audit-action-evidence">'+escapeHTML(issue.description || "Verificare il dettaglio nel report Audit.")+'</p><div class="audit-action-field"><strong>Decisione da valutare</strong><p>'+escapeHTML(rec.action)+'</p></div><div class="audit-action-field"><strong>Dato da verificare</strong><p>'+escapeHTML(rec.data)+'</p></div><div class="audit-action-field"><strong>KPI da monitorare</strong><p>'+escapeHTML(rec.kpi)+'</p></div><div class="audit-action-check"><strong>Come verificare</strong><p>'+escapeHTML(rec.check)+'</p></div><label class="audit-action-status">Stato dell’intervento <select data-audit-issue="'+escapeHTML(issue.id)+'"><option value="da-verificare">Da verificare</option><option value="pianificato">Pianificato</option><option value="completato">Completato</option><option value="misurato">Risultato misurato</option></select></label></article>';
+        return '<article class="audit-action-card"><div class="audit-action-card-top"><span class="audit-action-number">0'+(index+1)+'</span><span class="audit-action-priority '+escapeHTML(issue.priority || "low")+'">Priorità tecnica: '+priority+'</span></div><h4>'+escapeHTML(issue.title)+'</h4><p class="audit-action-evidence">'+escapeHTML(issue.description || "Verificare il dettaglio nel report Audit.")+'</p><div class="audit-action-field"><strong>Decisione da valutare</strong><p>'+escapeHTML(rec.action)+'</p></div><div class="audit-action-field"><strong>Dato da verificare</strong><p>'+escapeHTML(rec.data)+'</p></div><div class="audit-action-field"><strong>KPI da monitorare</strong><p>'+escapeHTML(rec.kpi)+'</p></div><div class="audit-action-check"><strong>Come verificare</strong><p>'+escapeHTML(rec.check)+'</p></div><div class="audit-action-measurement"><strong>Misura il risultato</strong><div class="audit-measurement-fields"><label>Valore iniziale<input type="text" data-audit-baseline="'+escapeHTML(issue.id)+'" placeholder="es. 42 richieste/mese"></label><label>Valore dopo<input type="text" data-audit-after="'+escapeHTML(issue.id)+'" placeholder="es. 51 richieste/mese"></label></div><small>Usa la stessa metrica e periodi comparabili. La differenza osservata non dimostra da sola un rapporto causale.</small></div><label class="audit-action-status">Stato dell’intervento <select data-audit-issue="'+escapeHTML(issue.id)+'"><option value="da-verificare">Da verificare</option><option value="pianificato">Pianificato</option><option value="completato">Completato</option><option value="misurato">Risultato misurato</option></select></label></article>';
       }).join("") : '<p class="full-audit-empty">Il report non contiene rilievi da trasformare in azioni.</p>';
       plans.querySelectorAll("select[data-audit-issue]").forEach(select => {
         const key = "valeyaActionStatus:" + report.url + ":" + select.dataset.auditIssue;
         try { select.value = localStorage.getItem(key) || "da-verificare"; } catch {}
         select.addEventListener("change", () => {
           try { localStorage.setItem(key, select.value); } catch {}
+        });
+      });
+      plans.querySelectorAll("input[data-audit-baseline], input[data-audit-after]").forEach(input => {
+        const issueId = input.dataset.auditBaseline || input.dataset.auditAfter;
+        const phase = input.hasAttribute("data-audit-baseline") ? "baseline" : "after";
+        const key = "valeyaActionMeasure:" + report.url + ":" + issueId + ":" + phase;
+        try { input.value = localStorage.getItem(key) || ""; } catch {}
+        input.addEventListener("change", () => {
+          try { localStorage.setItem(key, input.value); } catch {}
         });
       });
     }
