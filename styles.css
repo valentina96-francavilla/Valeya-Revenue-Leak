@@ -61,3 +61,5 @@
 .formula-note h3{margin:0 0 9px;font:700 12px var(--display)}
 .formula-note p{font-size:10px;line-height:1.7;color:#777985;margin:7px 0}
 .formula-note p strong{color:#363440}
+
+.metric small[id="revenueExplain"]{line-height:1.6;display:block;min-height:28px}.result small{display:block;max-width:330px;line-height:1.55}
