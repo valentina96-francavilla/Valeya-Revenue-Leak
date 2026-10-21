@@ -209,3 +209,4 @@ grant select on public.workspaces, public.workspace_members, public.audit_scans,
 grant insert on public.workspaces, public.audit_scans, public.audit_findings,
   public.revenue_leak_issues, public.revenue_leak_measurements to authenticated;
 grant update on public.workspaces, public.revenue_leak_issues to authenticated;
+grant all on public.workspaces, public.workspace_members, public.audit_scans, public.audit_findings, public.revenue_leak_issues, public.revenue_leak_measurements to service_role;
