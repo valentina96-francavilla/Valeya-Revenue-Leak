@@ -197,3 +197,7 @@ body.rl-clean{background:#101116;color:#e9e8f0}
 .rl-clean .pagefoot{color:#a5a4b4;border-color:#30313d}
 .rl-clean .pagefoot strong{color:#f0eef8}
 @media(max-width:680px){.rl-stepper{background:#191a22;border-color:#30313d}.rl-stepper .rl-step{min-width:0}}
+
+/* Audit evidence carried into Revenue Leak */
+.rl-selected-evidence{margin-top:12px;padding:14px;border:1px solid #3a3b49;border-radius:9px;background:#20212b;color:#e9e7f2;font-size:11px;line-height:1.6;overflow-wrap:anywhere}
+.rl-selected-evidence[hidden]{display:none!important}.rl-selected-evidence p{color:#c3c1d0;margin:8px 0}.rl-selected-evidence ul,.rl-selected-evidence ol{padding-left:20px;color:#c3c1d0}.rl-selected-evidence a{color:#c5bbff;overflow-wrap:anywhere}.rl-selected-evidence-head{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}.rl-selected-evidence-head span{font-size:9px;color:#a5a4b4}.rl-selected-evidence details{margin-top:10px}.rl-selected-evidence summary{cursor:pointer;color:#c5bbff}.rl-selected-evidence pre{max-height:420px;overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere;padding:10px;background:#15161d;border-radius:7px;color:#d7d4e4;font-size:9px}
