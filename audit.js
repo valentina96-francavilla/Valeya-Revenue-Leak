@@ -158,6 +158,7 @@
     $("revenueLeakLink").href="revenue-leak.html?scan="+encodeURIComponent(report.scanId);
     document.querySelectorAll("[data-transform-issue]").forEach(button=>{button.disabled=false;button.title="Crea una scheda operativa in Revenue Leak";});
     setStatus("Scansione salvata nel workspace. Puoi riaprire il report da altri dispositivi e trasformare i rilievi critici in interventi.","success");
+    renderScanHistory();
     return report.scanId;
   }
   function renderReport(data,target,strategy){
@@ -171,6 +172,16 @@
     $("revenueLeakLink").href="revenue-leak.html";
     persistReport(lastReport).catch(error=>{setStatus(error.message,"info");});
     results.scrollIntoView({behavior:"smooth",block:"start"});
+  }
+  async function renderScanHistory(){
+    const box=$("scanHistoryList");if(!box)return;
+    if(!window.ValeyaIntelligence?.getSession()?.access_token){box.innerHTML='<div class="empty">Accedi al workspace per consultare lo storico persistente.</div>';return;}
+    try{
+      const result=await window.ValeyaIntelligence.call("listScans",{method:"GET"});
+      const scans=result.scans||[];
+      if(!scans.length){box.innerHTML='<div class="empty">Nessuna scansione salvata. Avvia un audit dopo aver effettuato l\'accesso.</div>';return;}
+      box.innerHTML=scans.slice(0,10).map(scan=>'<article class="scan-history-item"><div><strong>'+safe(scan.url||"URL non disponibile")+'</strong><small>'+safe(scan.strategy==="mobile"?"Mobile":"Desktop")+' · '+safe(new Date(scan.generated_at||scan.created_at).toLocaleString("it-IT"))+'</small></div><a href="index.html?scan='+encodeURIComponent(scan.id)+'#report">Apri report ↗</a></article>').join("");
+    }catch(error){box.innerHTML='<div class="empty">'+safe(error.message)+'</div>';}
   }
   async function restoreLatestReport(){
     if(!window.ValeyaIntelligence?.getSession()?.access_token)return;
@@ -227,6 +238,7 @@
       else if(!lastReport)restoreLatestReport();
     }
   });
-  window.addEventListener("valeya-intelligence-ready",()=>{if(window.ValeyaIntelligence?.getSession()?.access_token)restoreLatestReport();});
+  window.addEventListener("valeya-intelligence-ready",()=>{renderScanHistory();if(window.ValeyaIntelligence?.getSession()?.access_token)restoreLatestReport();});
+  renderScanHistory();
   restoreLatestReport();
 })();
