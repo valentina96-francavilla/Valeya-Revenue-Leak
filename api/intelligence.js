@@ -64,16 +64,19 @@ async function requireMembership(userId, workspaceId) {
 async function insertIssue(user, workspaceId, issue) {
   const scanId = issue.source_scan_id || issue.scanId || null;
   const findingKey = issue.source_finding_key || issue.findingKey || issue.id || null;
+  let findingId = null;
   if (scanId) {
     const scans = await supabase("/rest/v1/audit_scans?id=eq." + encodeURIComponent(scanId) + "&workspace_id=eq." + encodeURIComponent(workspaceId) + "&select=id&limit=1", { admin: true });
     if (!scans?.length) { const e = new Error("La scansione non appartiene al workspace corrente."); e.status = 403; throw e; }
     if (findingKey) {
+      const findingRows = await supabase("/rest/v1/audit_findings?scan_id=eq." + encodeURIComponent(scanId) + "&workspace_id=eq." + encodeURIComponent(workspaceId) + "&finding_key=eq." + encodeURIComponent(findingKey) + "&select=id&limit=1", { admin: true });
+      findingId = findingRows?.[0]?.id || null;
       const existing = await supabase("/rest/v1/revenue_leak_issues?workspace_id=eq." + encodeURIComponent(workspaceId) + "&source_scan_id=eq." + encodeURIComponent(scanId) + "&source_finding_key=eq." + encodeURIComponent(findingKey) + "&select=*&limit=1", { admin: true });
       if (existing?.[0]) return existing[0];
     }
   }
   const row = {
-    workspace_id: workspaceId, created_by: user.id, source_scan_id: scanId, source_finding_key: findingKey,
+    workspace_id: workspaceId, created_by: user.id, source_scan_id: scanId, source_finding_id: findingId, source_finding_key: findingKey,
     title: String(issue.title || "Problema senza titolo").slice(0, 500),
     description: String(issue.description || "").slice(0, 12000),
     url: String(issue.url || issue.affected_url || "").slice(0, 2048) || null,
@@ -86,8 +89,8 @@ async function insertIssue(user, workspaceId, issue) {
     kpi_key: issue.kpi_key || issue.kpi || null,
     kpi_unit: issue.kpi_unit || issue.kpiUnit || null,
     kpi_direction: ["increase","decrease","range"].includes(issue.kpi_direction || issue.kpiDirection) ? (issue.kpi_direction || issue.kpiDirection) : null,
-    baseline: Number.isFinite(Number(issue.baseline)) && issue.baseline !== "" ? Number(issue.baseline) : null,
-    target: Number.isFinite(Number(issue.target)) && issue.target !== "" ? Number(issue.target) : null,
+    baseline: issue.baseline !== null && issue.baseline !== undefined && issue.baseline !== "" && Number.isFinite(Number(issue.baseline)) ? Number(issue.baseline) : null,
+    target: issue.target !== null && issue.target !== undefined && issue.target !== "" && Number.isFinite(Number(issue.target)) ? Number(issue.target) : null,
     review_date: issue.review_date || issue.reviewDate || null,
     state: ["open","planned","in_progress","completed","awaiting_measurement","verified","archived"].includes(issue.state) ? issue.state : "open"
   };
