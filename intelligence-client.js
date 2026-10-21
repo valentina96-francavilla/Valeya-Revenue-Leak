@@ -82,24 +82,9 @@
       panel = document.createElement("section");
       panel.id = "vi-auth-panel";
       panel.setAttribute("aria-label", "Accesso al workspace");
-      panel.innerHTML = '<div class="vi-auth-copy"><strong>Workspace sincronizzato</strong><small id="vi-auth-note" aria-live="polite">Accedi per salvare scansioni, interventi e misurazioni in modo persistente.</small></div><div class="vi-auth-controls" id="vi-auth-controls"><input id="vi-auth-email" type="email" autocomplete="email" placeholder="Email" aria-label="Email"><input id="vi-auth-password" type="password" autocomplete="current-password" placeholder="Password (minimo 8 caratteri)" aria-label="Password"><button type="button" id="vi-auth-login">Accedi</button><button type="button" id="vi-auth-signup">Crea account</button></div>';
+      panel.innerHTML = '<div class="vi-auth-copy"><strong>Workspace sincronizzato</strong><small id="vi-auth-note" aria-live="polite">Accedi per salvare scansioni, interventi e misurazioni in modo persistente.</small></div><div class="vi-auth-controls" id="vi-auth-controls"></div>';
       const anchor = document.querySelector(".topbar") || document.querySelector("header") || document.body.firstElementChild;
       if (anchor?.parentNode) anchor.parentNode.insertBefore(panel, anchor.nextSibling); else document.body.prepend(panel);
-      document.getElementById("vi-auth-login").addEventListener("click", async () => {
-        const email = document.getElementById("vi-auth-email").value.trim(), password = document.getElementById("vi-auth-password").value;
-        note("Accesso in corso…");
-        try { await signIn(email, password); note("Accesso effettuato. Workspace pronto."); }
-        catch (e) { note(e.message); }
-      });
-      document.getElementById("vi-auth-signup").addEventListener("click", async () => {
-        const email = document.getElementById("vi-auth-email").value.trim(), password = document.getElementById("vi-auth-password").value;
-        if (password.length < 8) { note("Usa una password di almeno 8 caratteri."); return; }
-        note("Creazione account in corso…");
-        try {
-          const result = await signUp(email, password);
-          note(result.access_token ? "Account creato e accesso effettuato." : "Account creato. Se è richiesta la conferma email, conferma l'indirizzo e poi accedi.");
-        } catch (e) { note(e.message); }
-      });
     }
     const controls = document.getElementById("vi-auth-controls"), noteEl = document.getElementById("vi-auth-note");
     if (!controls || !noteEl) return;
@@ -107,7 +92,24 @@
       controls.innerHTML = '<span class="vi-auth-user">' + safe(session.user?.email || "Account connesso") + '</span><button type="button" id="vi-auth-logout">Esci</button>';
       noteEl.textContent = "Dati salvati nel workspace, non nel browser.";
       document.getElementById("vi-auth-logout").addEventListener("click", () => signOut());
+      return;
     }
+    controls.innerHTML = '<input id="vi-auth-email" type="email" autocomplete="email" placeholder="Email" aria-label="Email"><input id="vi-auth-password" type="password" autocomplete="current-password" placeholder="Password (minimo 8 caratteri)" aria-label="Password"><button type="button" id="vi-auth-login">Accedi</button><button type="button" id="vi-auth-signup">Crea account</button>';
+    document.getElementById("vi-auth-login").addEventListener("click", async () => {
+      const email = document.getElementById("vi-auth-email").value.trim(), password = document.getElementById("vi-auth-password").value;
+      note("Accesso in corso…");
+      try { await signIn(email, password); note("Accesso effettuato. Workspace pronto."); }
+      catch (e) { note(e.message); }
+    });
+    document.getElementById("vi-auth-signup").addEventListener("click", async () => {
+      const email = document.getElementById("vi-auth-email").value.trim(), password = document.getElementById("vi-auth-password").value;
+      if (password.length < 8) { note("Usa una password di almeno 8 caratteri."); return; }
+      note("Creazione account in corso…");
+      try {
+        const result = await signUp(email, password);
+        note(result.access_token ? "Account creato e accesso effettuato." : "Account creato. Se è richiesta la conferma email, conferma l'indirizzo e poi accedi.");
+      } catch (e) { note(e.message); }
+    });
   }
   const style = document.createElement("style");
   style.textContent = '#vi-auth-panel{display:flex;align-items:center;justify-content:space-between;gap:16px;margin:0 0 20px;padding:13px 16px;border:1px solid #343541;border-radius:10px;background:#191a22;color:#eeeaf8;font:12px/1.5 system-ui,sans-serif}#vi-auth-panel .vi-auth-copy{min-width:180px;display:grid;gap:3px}#vi-auth-panel small{color:#aaa9b8}#vi-auth-panel .vi-auth-controls{display:flex;align-items:center;justify-content:flex-end;flex-wrap:wrap;gap:7px}#vi-auth-panel input{width:180px;max-width:100%;padding:9px 10px;background:#20212b;border:1px solid #3a3b49;border-radius:7px;color:#f0eef8;font:12px system-ui,sans-serif}#vi-auth-panel button{padding:9px 11px;border:1px solid #6753cb;border-radius:7px;background:#6c55d9;color:#fff;font:700 11px system-ui,sans-serif;cursor:pointer}#vi-auth-panel button:last-child{background:#20212b;border-color:#3a3b49}#vi-auth-panel .vi-auth-user{font-size:11px;color:#c5bbff;overflow-wrap:anywhere}@media(max-width:760px){#vi-auth-panel{align-items:stretch;flex-direction:column}#vi-auth-panel .vi-auth-controls{justify-content:flex-start}#vi-auth-panel input{flex:1;width:100%}}';
