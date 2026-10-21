@@ -83,11 +83,16 @@
     return {schemaVersion:"2.0",product:"Valeya Revenue Leak",planId:state.planId||makeId(),reportId:state.report?.reportId||null,reportUrl:state.report?.url||"",reportGeneratedAt:state.report?.generatedAt||null,site:state.report?.url||"",businessType:$("rl-business").value,goal:$("rl-goal").value,problem:currentProblem(),auditIssue:chosenIssue(),auditIssueId:chosenIssue()?.id||null,action:$("rl-action").value.trim(),interventionStatus:$("rl-intervention-status").value,owner:$("rl-owner").value.trim(),plannedDate:$("rl-planned-date").value,implementedDate:$("rl-implemented-date").value,workNotes:$("rl-work-notes").value.trim(),source:$("rl-source").value,kpi:$("rl-kpi").value,kpiLabel:kpiLabels[$("rl-kpi").value]||"Metrica da definire",kpiDirection:$("rl-kpi-direction").value,kpiUnit:$("rl-kpi-unit").value.trim(),window:$("rl-window").value,beforePeriod:$("rl-before-period").value.trim(),before:$("rl-before").value,target:$("rl-target").value,afterPeriod:$("rl-after-period").value.trim(),after:$("rl-after").value,reviewDate:$("rl-review-date").value,notes:$("rl-notes").value.trim(),measurements:state.measurements||[],status:$("rl-intervention-status").value,updatedAt:new Date().toISOString(),auditReportSnapshot:state.report?{reportId:state.report.reportId||null,url:state.report.url||"",generatedAt:state.report.generatedAt||null,strategy:state.report.strategy||null}:null};
   }
   function save(){
-    const data=collect();
+    const draft=collect();
     try{
+      if(draft.after!==""&&Number.isFinite(Number(draft.after))){
+        const signature=[draft.afterPeriod,draft.after,draft.notes].join("|");
+        if(!(state.measurements||[]).some(m=>m.signature===signature))state.measurements.push({measurementId:makeId(),signature,period:draft.afterPeriod||"",value:Number(draft.after),unit:draft.kpiUnit||"",source:draft.source,notes:draft.notes||"",recordedAt:new Date().toISOString()});
+      }
+      const data=collect();data.measurements=state.measurements;
       const plans=readPlans(),index=plans.findIndex(p=>p.planId===data.planId);
       if(index>=0)plans[index]=data;else plans.unshift(data);
-      writePlans(plans.slice(0,100));state.planId=data.planId;state.saved=true;$("rl-saved").hidden=false;renderSavedPlans();
+      writePlans(plans.slice(0,100));state.planId=data.planId;state.saved=true;$("rl-saved").hidden=false;renderSavedPlans();renderMeasurementHistory();
     }catch{$("rl-saved").hidden=true;alert("Impossibile salvare in questo browser. Esporta la scheda come JSON.");}
   }
   function exportPlan(){
@@ -95,7 +100,7 @@
     link.href=url;link.download="valeya-revenue-leak-scheda.json";document.body.appendChild(link);link.click();link.remove();URL.revokeObjectURL(url);
   }
   function restorePlan(plan){
-    state.planId=plan.planId||null;state.report=null;state.selectedIssue=null;
+    state.planId=plan.planId||null;state.report=null;state.selectedIssue=null;state.measurements=Array.isArray(plan.measurements)?plan.measurements:[];state.kpiDirection=plan.kpiDirection||"increase";state.kpiUnit=plan.kpiUnit||"";
     if(plan.reportId){
       try{const raw=localStorage.getItem("valeyaAuditReport:"+plan.reportId);if(raw)state.report=JSON.parse(raw);}catch{}
     }
@@ -103,7 +108,7 @@
     if(state.report&&plan.auditIssueId)state.selectedIssue=(state.report.issues||[]).findIndex(i=>i.id===plan.auditIssueId);
     if(state.selectedIssue<0)state.selectedIssue=null;
     $("rl-business").value=plan.businessType||"local";$("rl-goal").value=plan.goal||"leads";$("rl-manual-issue").value=plan.auditIssue?"":(plan.problem||"");
-    $("rl-action").value=plan.action||"";$("rl-source").value=plan.source||"manual";$("rl-kpi").value=plan.kpi||"leads";$("rl-window").value=plan.window||"14";
+    $("rl-action").value=plan.action||"";$("rl-intervention-status").value=plan.interventionStatus||plan.status||"da-pianificare";$("rl-owner").value=plan.owner||"";$("rl-planned-date").value=plan.plannedDate||"";$("rl-implemented-date").value=plan.implementedDate||"";$("rl-work-notes").value=plan.workNotes||"";$("rl-source").value=plan.source||"manual";$("rl-kpi").value=plan.kpi||"leads";$("rl-kpi-direction").value=plan.kpiDirection||"increase";$("rl-kpi-unit").value=plan.kpiUnit||"";$("rl-window").value=plan.window||"14";
     $("rl-before-period").value=plan.beforePeriod||"";$("rl-before").value=plan.before??"";$("rl-target").value=plan.target??"";$("rl-after-period").value=plan.afterPeriod||"";$("rl-after").value=plan.after??"";$("rl-review-date").value=plan.reviewDate||"";$("rl-notes").value=plan.notes||"";
     if(state.report)renderReport();else{$("rl-audit-source").hidden=true;$("rl-issue-list").innerHTML='<div class="rl-empty">Scheda manuale: nessun report Audit collegato.</div>';}
     renderMeasurement();showStep(1);$("rl-saved").hidden=true;
@@ -141,13 +146,19 @@
     if(!$("rl-action").value.trim()){$("rl-action").focus();$("rl-action").setCustomValidity("Descrivi l'intervento prima di procedere.");$("rl-action").reportValidity();return;}
     $("rl-action").setCustomValidity("");showStep(3);
   });
+  $("rl-to-measurement").addEventListener("click",()=>{
+    if($("rl-intervention-status").value==="implementato"&&!$("rl-implemented-date").value){
+      $("rl-implemented-date").focus();$("rl-implemented-date").setCustomValidity("Inserisci la data effettiva di implementazione.");$("rl-implemented-date").reportValidity();return;
+    }
+    $("rl-implemented-date").setCustomValidity("");showStep(4);
+  });
   document.querySelectorAll("[data-back]").forEach(btn=>btn.addEventListener("click",()=>showStep(Number(btn.dataset.back))));
   document.querySelectorAll(".rl-step").forEach(btn=>btn.addEventListener("click",()=>{const target=Number(btn.dataset.step);if(target<=state.step)showStep(target);}));
   $("rl-manual-issue").addEventListener("input",()=>{
     if($("rl-manual-issue").value.trim()){state.selectedIssue=null;$("rl-issue-list").querySelectorAll(".rl-issue").forEach(x=>{x.classList.remove("selected");x.querySelector(".rl-issue-radio").textContent="";});}
   });
-  ["rl-before","rl-after","rl-target","rl-before-period","rl-after-period"].forEach(id=>$(id).addEventListener("input",updateResult));
-  $("rl-kpi").addEventListener("change",()=>{if(state.step===3)renderMeasurement();});
+  ["rl-before","rl-after","rl-target","rl-before-period","rl-after-period","rl-kpi-unit"].forEach(id=>$(id).addEventListener("input",updateResult));
+  ["rl-kpi","rl-kpi-direction"].forEach(id=>$(id).addEventListener("change",()=>{if(state.step===4)renderMeasurement();else updateResult();}));
   $("rl-save").addEventListener("click",save);$("rl-export").addEventListener("click",exportPlan);$("rl-refresh-plans").addEventListener("click",renderSavedPlans);
   $("rl-remove-audit").addEventListener("click",()=>{state.report=null;state.selectedIssue=null;$("rl-audit-source").hidden=true;$("rl-issue-count").textContent="0 rilievi importati";$("rl-issue-list").innerHTML='<div class="rl-empty">Report rimosso. Puoi descrivere manualmente il problema.</div>';});
   loadReport();renderSavedPlans();showStep(1);
