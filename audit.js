@@ -72,10 +72,25 @@
     return {key:"medium",label:"Medio"};
   }
   function verificationFor(id,category){
-    if(category==="performance")return ["Ripeti l'analisi sulla stessa URL e sullo stesso dispositivo.","Confronta la metrica interessata e, se disponibile, i dati reali degli utenti.","Registra data, condizioni del test e differenza osservata."];
-    if(category==="accessibility")return ["Controlla manualmente il componente segnalato con tastiera e tecnologie assistive pertinenti.","Verifica il caso concreto sulla pagina, non soltanto il punteggio automatico.","Ripeti lo stesso test dopo la correzione."];
-    if(category==="seo")return ["Verifica il sorgente HTML e la risposta della pagina.","Controlla l'esito con Search Console quando pertinente e disponibile.","Dopo la modifica, registra la data e confronta dati di ricerca su periodi adeguati."];
-    return ["Riproduci il rilievo sulla pagina interessata.","Conferma che sia applicabile al sito e all'obiettivo aziendale.","Ripeti il controllo dopo la modifica e conserva l'evidenza."];
+    const checks=[
+      [/largest-contentful-paint|first-contentful-paint|speed-index|interactive/,"Esegui una nuova analisi sulla stessa URL e sullo stesso dispositivo; confronta la metrica indicata e annota le condizioni del test."],
+      [/render-blocking|unused-javascript|unused-css|image-delivery|offscreen-images|modern-image|server-response-time/,"Apri i dettagli dell'opportunità Lighthouse, individua la risorsa indicata e verifica che il tempo o i byte stimati diminuiscano dopo la correzione."],
+      [/document-title/,"Controlla che la pagina abbia un elemento <title> descrittivo e univoco; ripeti il controllo sul sorgente HTML."],
+      [/meta-description/,"Verifica che la pagina abbia una meta description pertinente e non duplicata; controlla il tag nel sorgente HTML."],
+      [/image-alt/,"Controlla le immagini segnalate: aggiungi testo alternativo significativo alle immagini informative e lascia alt vuoto per quelle decorative."],
+      [/color-contrast/,"Verifica il rapporto di contrasto dei colori indicati con uno strumento di contrasto e ripeti un controllo automatico dopo la correzione."],
+      [/tap-target|target-size/,"Prova i controlli segnalati su uno schermo mobile e verifica dimensioni e distanza dei target interattivi."],
+      [/button-name|link-name|label-content|aria/,"Usa tastiera e lettore di schermo per verificare che il controllo abbia un nome accessibile e che il focus sia comprensibile."],
+      [/robots|canonical|crawlable|http-status-code|hreflang|structured-data/,"Controlla il sorgente HTML e la risposta HTTP; quando pertinente, verifica il risultato in Google Search Console o con il test specifico del dato strutturato."]
+    ];
+    const specific=checks.find(([pattern])=>pattern.test(id));
+    const tailored=specific?specific[1]:null;
+    const common=["Registra la data, la pagina e l'evidenza prima dell'intervento.","Ripeti lo stesso controllo dopo la modifica e conserva il risultato per il confronto."];
+    if(tailored)return [tailored,...common];
+    if(category==="performance")return ["Ripeti l'analisi sulla stessa URL e sullo stesso dispositivo.","Confronta la metrica interessata e, se disponibile, i dati reali degli utenti.",...common];
+    if(category==="accessibility")return ["Controlla manualmente il componente segnalato con tastiera e tecnologie assistive pertinenti.","Verifica il caso concreto sulla pagina, non soltanto il punteggio automatico.",...common];
+    if(category==="seo")return ["Verifica il sorgente HTML e la risposta della pagina.","Controlla l'esito con Search Console quando pertinente e disponibile.",...common];
+    return ["Riproduci il rilievo sulla pagina interessata.","Conferma che sia applicabile al sito e all'obiettivo aziendale.",...common];
   }
   function enrichIssue(audit,lighthouse){
     const category=inferCategory(audit.id,lighthouse),score=audit.score;
