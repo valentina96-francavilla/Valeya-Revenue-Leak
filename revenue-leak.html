@@ -5,7 +5,7 @@
 <meta name="description" content="Valeya Revenue Leak collega criticità del sito, decisioni operative e KPI misurabili per attività locali e aziende.">
 <link rel="canonical" href="https://audit.valeyastudio.it/revenue-leak.html">
 <title>Revenue Leak | Valeya Intelligence</title>
-<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet"><link rel="stylesheet" href="styles.css">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet"><link rel="stylesheet" href="./styles.css?v=0.3">
 </head>
 <body class="rl-clean">
 <aside class="sidebar">
@@ -59,18 +59,23 @@
 <div class="rl-panel-head"><div><span class="rl-kicker">FASE 3 · MISURAZIONE</span><h2>Registra i dati, non le supposizioni.</h2><p>Inserisci la stessa metrica prima e dopo l'intervento. Se non hai ancora il dato, lascia il campo vuoto e rilevalo prima di procedere.</p></div><span class="rl-panel-count">3 / 3</span></div>
 <div id="rl-measure-summary" class="rl-measure-summary"></div>
 <div class="rl-measure-grid">
-<label class="rl-field">Valore iniziale<input id="rl-before" type="number" min="0" step="any" placeholder="Es. 24"><small>Valore prima della modifica.</small></label>
-<label class="rl-field">Valore dopo l'intervento<input id="rl-after" type="number" min="0" step="any" placeholder="Da compilare dopo il test"><small>Compilalo solo quando hai raccolto i dati.</small></label>
+<label class="rl-field">Periodo del valore iniziale<input id="rl-before-period" type="text" placeholder="Es. 1–30 ottobre"><small>Indica il periodo esatto a cui si riferisce il dato.</small></label>
+<label class="rl-field">Obiettivo numerico<input id="rl-target" type="number" step="any" placeholder="Es. 18"><small>Risultato che vuoi raggiungere, distinto dal risultato reale.</small></label>
+<label class="rl-field">Valore iniziale<input id="rl-before" type="number" step="any" placeholder="Es. 12"><small id="rl-before-help">Valore della metrica prima dell'intervento.</small></label>
+<label class="rl-field">Periodo del risultato osservato<input id="rl-after-period" type="text" placeholder="Es. 1–30 novembre"><small>Usa un periodo comparabile con quello iniziale.</small></label>
+<label class="rl-field">Valore osservato dopo l'intervento<input id="rl-after" type="number" step="any" placeholder="Da compilare dopo il test"><small id="rl-after-help">Inserisci il dato reale, non l'obiettivo.</small></label>
+<label class="rl-field">Data prevista di verifica<input id="rl-review-date" type="date"><small>Per ricordare quando tornare a misurare il risultato.</small></label>
 </div>
 <div class="rl-result" id="rl-result" aria-live="polite"><span class="rl-result-icon">↗</span><div><strong>Risultato non ancora disponibile</strong><p>Inserisci entrambi i valori per calcolare la variazione osservata.</p></div></div>
 <label class="rl-field">Note sul risultato<textarea id="rl-notes" rows="3" placeholder="Es. nello stesso periodo è partita una campagna pubblicitaria."></textarea></label>
 <div class="rl-note rl-note-warning"><strong>Attenzione all'interpretazione</strong><span>Una variazione prima/dopo non dimostra da sola che l'intervento l'abbia causata. Considera stagionalità, campagne, volume di traffico e altri fattori.</span></div>
 <div class="rl-actions"><button type="button" class="rl-secondary" data-back="2">← Torna al piano</button><div class="rl-action-right"><button type="button" class="rl-secondary" id="rl-export">Esporta scheda</button><button type="button" class="rl-primary" id="rl-save">Salva scheda <span>✓</span></button></div></div>
-<div id="rl-saved" class="rl-saved" hidden role="status">Scheda salvata in questo browser.</div>
+<div id="rl-saved" class="rl-saved" hidden role="status">Scheda salvata in questo browser. È disponibile nell’elenco delle schede salvate.</div>
 </section>
 </div>
+<section class="rl-panel rl-saved-plans" id="rl-saved-plans-panel"><div class="rl-panel-head"><div><span class="rl-kicker">ARCHIVIO LOCALE</span><h2>Schede salvate</h2><p>Riapri una scheda per ritrovare problema, metrica, valori e intervento. L’archivio è disponibile in questo browser e non è sincronizzato tra dispositivi.</p></div><button type="button" class="rl-secondary" id="rl-refresh-plans">Aggiorna elenco</button></div><div id="rl-saved-plans-list" class="rl-saved-plans-list"><div class="rl-empty">Nessuna scheda salvata.</div></div></section>
 <section class="rl-bottom-info"><div><span class="rl-kicker">COME FUNZIONA</span><h2>Tre passaggi. Un problema alla volta.</h2></div><div class="rl-mini-step"><b>01</b><div><strong>Diagnosi</strong><p>Individua un problema reale e chiarisci cosa sai e cosa devi verificare.</p></div></div><div class="rl-mini-step"><b>02</b><div><strong>Decisione</strong><p>Definisci l'intervento, la fonte dati e un KPI coerente.</p></div></div><div class="rl-mini-step"><b>03</b><div><strong>Misurazione</strong><p>Confronta il prima e il dopo senza scambiare una stima per un risultato.</p></div></div></section>
 <footer class="pagefoot"><strong><span class="mark">v.</span> VALEYA</strong><span>Revenue Leak · Workspace operativo</span><span>Ipotesi trasparenti. Risultati verificabili.</span></footer>
 </main>
-<script src="app.js" defer></script>
+<script src="./app.js?v=0.3" defer></script>
 </body></html>
