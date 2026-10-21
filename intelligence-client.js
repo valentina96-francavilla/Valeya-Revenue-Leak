@@ -1,6 +1,6 @@
 (() => {
   "use strict";
-  const API = "https://valeya-audit-revenue-dashboard.vercel.app/api/intelligence";
+  const API = location.hostname.endsWith(".vercel.app") ? "/api/intelligence" : "https://valeya-audit-revenue-dashboard.vercel.app/api/intelligence";
   const SESSION_KEY = "valeyaIntelligenceAuthSession";
   let config = null;
   let session = null;
