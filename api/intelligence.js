@@ -5,6 +5,7 @@ const PUBLIC_KEY = () => process.env.SUPABASE_PUBLISHABLE_KEY || process.env.SUP
 const SUPABASE_URL = () => (process.env.SUPABASE_URL || "").replace(/\/$/, "");
 const SERVICE_KEY = () => process.env.SUPABASE_SERVICE_ROLE_KEY;
 const allowedOrigins = () => (process.env.INTELLIGENCE_ALLOWED_ORIGINS || "https://audit.valeyastudio.it").split(",").map(x => x.trim()).filter(Boolean);
+function isAllowedOrigin(origin) { return allowedOrigins().includes(origin) || /^https:\/\/valeya-audit-revenue-dashboard-[a-z0-9-]+\.vercel\.app$/i.test(origin || ""); }
 
 function headersFor(req, res) {
   const origin = req.headers.origin;
