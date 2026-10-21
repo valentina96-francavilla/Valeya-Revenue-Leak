@@ -13,7 +13,7 @@ function headersFor(req, res) {
   res.setHeader("X-Content-Type-Options", "nosniff");
   res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
-  if (origin && allowedOrigins().includes(origin)) res.setHeader("Access-Control-Allow-Origin", origin);
+  if (origin && isAllowedOrigin(origin)) res.setHeader("Access-Control-Allow-Origin", origin);
   else if (origin) return false;
   return true;
 }
