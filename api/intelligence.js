@@ -105,10 +105,18 @@ async function dashboard(workspaceId) {
     supabase("/rest/v1/revenue_leak_measurements?workspace_id=eq." + encodeURIComponent(workspaceId) + "&select=id,issue_id,measured_at&order=measured_at.desc&limit=100", { admin: true })
   ]);
   const now = new Date().toISOString().slice(0,10);
-  const measuredIssues = new Set((measurements || []).map(m => m.issue_id));
+  const latestMeasurement = new Map();
+  for (const measurement of measurements || []) {
+    const previous = latestMeasurement.get(measurement.issue_id);
+    if (!previous || new Date(measurement.measured_at) > new Date(previous.measured_at)) latestMeasurement.set(measurement.issue_id, measurement);
+  }
   const criticalOpen = (issues || []).filter(i => i.severity === "high" && i.state === "open");
   const due = (issues || []).filter(i => i.review_date && i.review_date <= now && !["verified","archived"].includes(i.state));
-  const awaiting = (issues || []).filter(i => ["completed","awaiting_measurement"].includes(i.state) && !measuredIssues.has(i.id));
+  const awaiting = (issues || []).filter(i => {
+    if (!["completed","awaiting_measurement"].includes(i.state)) return false;
+    const measured = latestMeasurement.get(i.id), implemented = i.intervention?.implementedDate;
+    return !measured || (implemented && measured.measured_at.slice(0,10) < implemented);
+  });
   return { counts: { criticalOpen: criticalOpen.length, dueReviews: due.length, awaitingMeasurement: awaiting.length, totalIssues: (issues || []).length, totalScans: (scans || []).length }, criticalOpen, dueReviews: due, awaitingMeasurement: awaiting, recentScans: scans || [] };
 }
 
