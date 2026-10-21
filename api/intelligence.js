@@ -110,12 +110,12 @@ async function dashboard(workspaceId) {
     const previous = latestMeasurement.get(measurement.issue_id);
     if (!previous || new Date(measurement.measured_at) > new Date(previous.measured_at)) latestMeasurement.set(measurement.issue_id, measurement);
   }
-  const criticalOpen = (issues || []).filter(i => i.severity === "high" && i.state === "open");
+  const criticalOpen = (issues || []).filter(i => i.severity === "high" && i.state === "open" && !String(i.intervention?.owner || "").trim());
   const due = (issues || []).filter(i => i.review_date && i.review_date <= now && !["verified","archived"].includes(i.state));
   const awaiting = (issues || []).filter(i => {
     if (!["completed","awaiting_measurement"].includes(i.state)) return false;
     const measured = latestMeasurement.get(i.id), implemented = i.intervention?.implementedDate;
-    return !measured || (implemented && measured.measured_at.slice(0,10) < implemented);
+    return !measured || !implemented || measured.measured_at.slice(0,10) < implemented;
   });
   return { counts: { criticalOpen: criticalOpen.length, dueReviews: due.length, awaitingMeasurement: awaiting.length, totalIssues: (issues || []).length, totalScans: (scans || []).length }, criticalOpen, dueReviews: due, awaitingMeasurement: awaiting, recentScans: scans || [] };
 }
@@ -171,7 +171,7 @@ export default async function handler(req, res) {
     }
     if (req.method === "GET" && action === "dashboard") return json(res,200,await dashboard(workspaceId));
     if (req.method === "GET" && action === "listIssues") {
-      const rows = await supabase("/rest/v1/revenue_leak_issues?workspace_id=eq." + encodeURIComponent(workspaceId) + "&select=*&order=updated_at.desc&limit=250",{admin:true});
+      const rows = await supabase("/rest/v1/revenue_leak_issues?workspace_id=eq." + encodeURIComponent(workspaceId) + "&state=neq.archived&select=*&order=updated_at.desc&limit=250",{admin:true});
       return json(res,200,{issues:rows || [],workspaceId});
     }
     if (req.method === "GET" && action === "listScans") {
