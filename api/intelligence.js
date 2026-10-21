@@ -167,6 +167,12 @@ export default async function handler(req, res) {
       const rows = await supabase("/rest/v1/audit_scans?workspace_id=eq." + encodeURIComponent(workspaceId) + "&select=id,url,final_url,strategy,scores,generated_at,created_at&order=created_at.desc&limit=100",{admin:true});
       return json(res,200,{scans:rows || [],workspaceId});
     }
+    if (req.method === "GET" && action === "getScan") {
+      const id = String(req.query?.id || "");
+      const rows = await supabase("/rest/v1/audit_scans?id=eq." + encodeURIComponent(id) + "&workspace_id=eq." + encodeURIComponent(workspaceId) + "&select=id,raw_report,created_at&limit=1", { admin: true });
+      if (!rows?.[0]) return json(res,404,{error:"Scansione non trovata nel workspace."});
+      return json(res,200,{scanId:rows[0].id,report:rows[0].raw_report,createdAt:rows[0].created_at,workspaceId});
+    }
     if (req.method === "GET" && action === "getIssue") {
       const id = String(req.query?.id || "");
       const rows = await supabase("/rest/v1/revenue_leak_issues?id=eq." + encodeURIComponent(id) + "&workspace_id=eq." + encodeURIComponent(workspaceId) + "&select=*&limit=1",{admin:true});
