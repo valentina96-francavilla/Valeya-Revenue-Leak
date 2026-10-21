@@ -1,152 +1,119 @@
-const money=new Intl.NumberFormat('it-IT',{style:'currency',currency:'EUR',maximumFractionDigits:0});
-const integer=new Intl.NumberFormat('it-IT',{maximumFractionDigits:0});
-const percent=n=>n.toLocaleString('it-IT',{minimumFractionDigits:1,maximumFractionDigits:1})+'%';
-const el=id=>document.getElementById(id);
-const c={visitors:el('visitors'),conversion:el('conversion'),target:el('target'),order:el('order')};
-function calc(){
- const v={visitors:+c.visitors.value,conversion:+c.conversion.value,target:+c.target.value,order:+c.order.value};
- const currentOrders=v.visitors*v.conversion/100;
- const revenue=currentOrders*v.order;
- const uplift=Math.max(0,v.visitors*(v.target-v.conversion)/100*v.order);
- return {v,revenue,uplift,currentOrders};
-}
-function render(){
- const d=calc();
- el('visitorsOut').textContent=integer.format(d.v.visitors);
- el('conversionOut').textContent=percent(d.v.conversion);
- el('targetOut').textContent=percent(d.v.target);
- el('orderOut').textContent=money.format(d.v.order);
- el('revenue').textContent=money.format(d.revenue);
- el('revenueExplain').textContent=integer.format(d.currentOrders)+' ordini stimati × '+money.format(d.v.order)+' di valore medio';
- el('cr').textContent=percent(d.v.conversion);
- el('crbar').style.width=Math.min(100,d.v.conversion/5*100)+'%';
- el('aov').textContent=money.format(d.v.order);
- el('potential').textContent=money.format(d.uplift);
- el('convvalue').innerHTML='+ '+money.format(d.uplift)+'<small>/ mese nello scenario</small>';
- el('aovvalue').innerHTML='Da misurare<small>con dati reali</small>';
- el('cartvalue').innerHTML='Da misurare<small>con dati reali</small>';
- el('simResult').textContent=(d.uplift>0?'+ ':'')+money.format(d.uplift);
- el('resultExplain').textContent=d.v.target>d.v.conversion?'Scenario ipotetico se raggiungi l’obiettivo, mantenendo stabili visite e valore medio ordine.':'L’obiettivo non supera il tasso attuale: il simulatore non stima ricavi aggiuntivi positivi.';
-}
-Object.values(c).forEach(input=>input.addEventListener('input',render));
-el('update').addEventListener('click',()=>{
- render();el('opportunities').scrollIntoView({behavior:'smooth',block:'start'});
- el('update').textContent='Valori aggiornati ✓';
- setTimeout(()=>el('update').innerHTML='Aggiorna stima <span>→</span>',1500);
-});
-el('reset').addEventListener('click',()=>{
- c.visitors.value=36000;c.conversion.value=1.8;c.target.value=2.4;c.order.value=75;
- render();window.scrollTo({top:0,behavior:'smooth'});
-});
-
-
-// Audit → Revenue Leak: keep the handoff explicit and evidence-led.
 (() => {
-  const byId = id => document.getElementById(id);
-  const escapeHTML = value => String(value ?? "").replace(/[&<>"']/g, ch => ({
-    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
-  }[ch]));
-  const moneyText = value => new Intl.NumberFormat("it-IT", {style:"currency",currency:"EUR",maximumFractionDigits:0}).format(value);
-
-  function recommendation(issue) {
-    const id = String(issue.id || "").toLowerCase();
-    const title = String(issue.title || "").toLowerCase();
-    if (/largest-contentful-paint|speed-index|first-contentful-paint|interactive|render-blocking|unused-javascript|unused-css|image-delivery|offscreen-images|modern-image/.test(id)) {
-      return {
-        action: "Verifica e migliora il caricamento della pagina interessata.",
-        data: "Dati di velocità della pagina e dispositivo; se disponibili, dati real-user (Core Web Vitals).",
-        kpi: "LCP / INP / CLS pertinenti e tasso di contatto o completamento del percorso.",
-        check: "Confronta la stessa pagina e lo stesso dispositivo prima e dopo la modifica."
-      };
-    }
-    if (/contrast|tap-target|target-size|label-content|label|aria|accessibility|button-name|link-name/.test(id) || /accessib|contrasto|pulsante|etichetta/.test(title)) {
-      return {
-        action: "Controlla manualmente il componente segnalato e rendilo comprensibile e utilizzabile.",
-        data: "Test manuale da tastiera e smartphone; feedback degli utenti e dati del percorso interessato, se disponibili.",
-        kpi: "Completamento del modulo o del task; errori e abbandoni osservati.",
-        check: "Ripeti lo stesso test dopo la correzione. Il punteggio automatico non sostituisce il test manuale."
-      };
-    }
-    if (/document-title|meta-description|canonical|robots|crawlable|link-text|http-status-code|hreflang|structured-data/.test(id) || /seo|title|descrizione|indicizz/.test(title)) {
-      return {
-        action: "Verifica il problema SEO sulla pagina e correggilo solo se applicabile.",
-        data: "Google Search Console: indicizzazione, query, impressioni e clic della pagina.",
-        kpi: "Clic organici e impressioni pertinenti; richieste provenienti dal traffico organico.",
-        check: "Annota la data della modifica e confronta periodi comparabili. Il ranking non è garantito."
-      };
-    }
-    if (/server-response-time|redirects|uses-rel-preload|font-display|cache/.test(id)) {
-      return {
-        action: "Verifica la causa tecnica del rallentamento prima di intervenire.",
-        data: "Tempi di risposta e caricamento; configurazione hosting/cache e dati real-user, se disponibili.",
-        kpi: "Tempo di risposta / LCP e conversione del percorso interessato, se tracciata.",
-        check: "Ripeti il test in condizioni comparabili e verifica che la modifica non rompa altre funzioni."
-      };
-    }
-    return {
-      action: "Apri il dettaglio del rilievo e conferma manualmente che sia un problema reale per questa pagina.",
-      data: "La fonte dipende dal rilievo: test manuale, Analytics, Search Console, modulo contatti o gestionale.",
-      kpi: "Scegli una sola metrica collegata al percorso interessato, ad esempio invii del modulo, chiamate tracciate o completamento del task.",
-      check: "Registra il valore iniziale prima di intervenire e confrontalo dopo la modifica, usando periodi comparabili."
-    };
+  const $ = id => document.getElementById(id);
+  const state = {step:1, report:null, selectedIssue:null, saved:false};
+  const escapeHTML = value => String(value ?? "").replace(/[&<>"']/g, ch => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));
+  const fmt = value => new Intl.NumberFormat("it-IT",{maximumFractionDigits:2}).format(value);
+  const kpiLabels = {leads:"Numero di richieste valide",lead_rate:"Tasso di conversione visita → richiesta",calls:"Telefonate provenienti dal sito",bookings:"Prenotazioni completate",quotes:"Preventivi richiesti",organic:"Clic organici pertinenti",task:"Completamento del percorso / task",revenue:"Ricavi attribuibili al canale",technical:"Metrica tecnica pertinente (es. LCP)"};
+  const goalLabels = {leads:"Ricevere più richieste di contatto",calls:"Ricevere più telefonate",booking:"Ottenere più prenotazioni",quotes:"Ricevere più richieste di preventivo",sales:"Aumentare gli acquisti online",seo:"Aumentare il traffico organico qualificato"};
+  function recommendation(issue){
+    const id=String(issue.id||"").toLowerCase(), title=String(issue.title||"").toLowerCase();
+    if(/largest-contentful-paint|speed-index|first-contentful-paint|interactive|render-blocking|unused-javascript|unused-css|image-delivery|offscreen-images|modern-image|server-response-time|redirects|font-display|cache/.test(id))
+      return {action:"Verifica la causa del rallentamento e correggi il problema solo dopo averlo riprodotto.",source:"analytics",kpi:"technical",detail:"Confronta la stessa pagina e lo stesso dispositivo; usa dati real-user se disponibili."};
+    if(/contrast|tap-target|target-size|label-content|aria|accessibility|button-name|link-name/.test(id)||/accessib|contrasto|pulsante|etichetta/.test(title))
+      return {action:"Testa manualmente il componente da smartphone e tastiera, poi correggi il problema osservato.",source:"manual",kpi:"task",detail:"Ripeti lo stesso task prima e dopo. Un punteggio automatico non sostituisce il test manuale."};
+    if(/document-title|meta-description|canonical|robots|crawlable|link-text|http-status-code|hreflang|structured-data/.test(id)||/seo|title|descrizione|indicizz/.test(title))
+      return {action:"Verifica che il rilievo sia applicabile e correggi la pagina se necessario.",source:"search",kpi:"organic",detail:"Annota la data della modifica e confronta clic e impressioni su periodi comparabili."};
+    return {action:"Conferma manualmente che il rilievo sia un problema reale per il percorso del cliente.",source:"manual",kpi:"task",detail:"Prima di intervenire, scegli una metrica pertinente e registra il valore iniziale."};
   }
-
-  function renderAuditContext() {
-    const context = byId("auditContext");
-    if (!context) return;
-    let report = null;
-    try { report = JSON.parse(sessionStorage.getItem("valeyaAuditReport") || "null"); } catch {}
-    if (!report || report.product !== "Audit Valeya" || !Array.isArray(report.issues)) return;
-    context.hidden = false;
-    byId("auditSite").textContent = report.url || "URL non disponibile";
-    const scores = byId("auditScores");
-    if (scores) scores.innerHTML = (report.scores || []).map(item =>
-      '<div class="audit-score"><span>'+escapeHTML(item.category)+'</span><strong>'+(Number.isFinite(item.score)?escapeHTML(item.score)+'/100':'N/D')+'</strong></div>'
-    ).join("");
-    const issuesList = byId("auditIssues");
-    if (issuesList) issuesList.innerHTML = report.issues.slice(0,8).map(issue =>
-      '<li><strong>'+escapeHTML(issue.title)+'</strong> · '+escapeHTML(issue.priority === "high" ? "Priorità tecnica alta" : issue.priority === "medium" ? "Da migliorare" : "Da approfondire")+'</li>'
-    ).join("") || "<li>Nessun rilievo disponibile nel report trasferito.</li>";
-    const plans = byId("auditActionPlan");
-    if (plans) {
-      const issues = report.issues.slice(0,5);
-      plans.innerHTML = issues.length ? issues.map((issue,index) => {
-        const rec = recommendation(issue);
-        const priority = issue.priority === "high" ? "Alta" : issue.priority === "medium" ? "Media" : "Da verificare";
-        return '<article class="audit-action-card"><div class="audit-action-card-top"><span class="audit-action-number">0'+(index+1)+'</span><span class="audit-action-priority '+escapeHTML(issue.priority || "low")+'">Priorità tecnica: '+priority+'</span></div><h4>'+escapeHTML(issue.title)+'</h4><p class="audit-action-evidence">'+escapeHTML(issue.description || "Verificare il dettaglio nel report Audit.")+'</p><div class="audit-action-field"><strong>Decisione da valutare</strong><p>'+escapeHTML(rec.action)+'</p></div><div class="audit-action-field"><strong>Dato da verificare</strong><p>'+escapeHTML(rec.data)+'</p></div><div class="audit-action-field"><strong>KPI da monitorare</strong><p>'+escapeHTML(rec.kpi)+'</p></div><div class="audit-action-check"><strong>Come verificare</strong><p>'+escapeHTML(rec.check)+'</p></div><div class="audit-action-measurement"><strong>Misura il risultato</strong><div class="audit-measurement-fields"><label>Valore iniziale<input type="text" data-audit-baseline="'+escapeHTML(issue.id)+'" placeholder="es. 42 richieste/mese"></label><label>Valore dopo<input type="text" data-audit-after="'+escapeHTML(issue.id)+'" placeholder="es. 51 richieste/mese"></label></div><small>Usa la stessa metrica e periodi comparabili. La differenza osservata non dimostra da sola un rapporto causale.</small></div><label class="audit-action-status">Stato dell’intervento <select data-audit-issue="'+escapeHTML(issue.id)+'"><option value="da-verificare">Da verificare</option><option value="pianificato">Pianificato</option><option value="completato">Completato</option><option value="misurato">Risultato misurato</option></select></label></article>';
-      }).join("") : '<p class="full-audit-empty">Il report non contiene rilievi da trasformare in azioni.</p>';
-      plans.querySelectorAll("select[data-audit-issue]").forEach(select => {
-        const key = "valeyaActionStatus:" + report.url + ":" + select.dataset.auditIssue;
-        try { select.value = localStorage.getItem(key) || "da-verificare"; } catch {}
-        select.addEventListener("change", () => {
-          try { localStorage.setItem(key, select.value); } catch {}
-        });
-      });
-      plans.querySelectorAll("input[data-audit-baseline], input[data-audit-after]").forEach(input => {
-        const issueId = input.dataset.auditBaseline || input.dataset.auditAfter;
-        const phase = input.hasAttribute("data-audit-baseline") ? "baseline" : "after";
-        const key = "valeyaActionMeasure:" + report.url + ":" + issueId + ":" + phase;
-        try { input.value = localStorage.getItem(key) || ""; } catch {}
-        input.addEventListener("change", () => {
-          try { localStorage.setItem(key, input.value); } catch {}
-        });
-      });
-    }
-    const open = byId("openFullAudit");
-    if (open) open.hidden = false;
-    const fullReport = byId("fullAuditReport");
-    if (fullReport) {
-      byId("fullAuditMeta").textContent = "URL: " + (report.url || "N/D") + " · Generato: " + (report.generatedAt ? new Date(report.generatedAt).toLocaleString("it-IT") : "data non disponibile");
-      byId("fullAuditScores").innerHTML = (report.scores || []).map(item => '<div class="full-audit-score"><span>'+escapeHTML(item.category)+'</span><strong>'+(Number.isFinite(item.score)?escapeHTML(item.score)+'/100':'N/D')+'</strong></div>').join("");
-      byId("fullAuditIssues").innerHTML = report.issues.map(issue => '<article class="full-audit-issue"><div class="full-audit-issue-heading"><strong>'+escapeHTML(issue.title)+'</strong><span class="full-audit-priority '+escapeHTML(issue.priority || "low")+'">'+escapeHTML(issue.priority || "Da verificare")+'</span></div><p>'+escapeHTML(issue.description || "")+'</p><small>'+escapeHTML(issue.displayValue || "")+'</small></article>').join("") || '<p class="full-audit-empty">Nessun rilievo nel report.</p>';
-    }
+  function showStep(step){
+    state.step=step;
+    document.querySelectorAll(".rl-panel-step").forEach(panel=>{const active=Number(panel.dataset.panel)===step;panel.hidden=!active;panel.classList.toggle("active",active);});
+    document.querySelectorAll(".rl-step").forEach(btn=>{const n=Number(btn.dataset.step);btn.classList.toggle("active",n===step);btn.classList.toggle("done",n<step);});
+    window.scrollTo({top:0,behavior:"smooth"});
+    if(step===3) renderMeasurement();
   }
-
-  byId("openFullAudit")?.addEventListener("click", () => { byId("fullAuditReport").hidden = false; });
-  byId("closeFullAudit")?.addEventListener("click", () => { byId("fullAuditReport").hidden = true; });
-  byId("clearAuditContext")?.addEventListener("click", () => {
-    try { sessionStorage.removeItem("valeyaAuditReport"); } catch {}
-    byId("auditContext").hidden = true;
+  function chosenIssue(){
+    if(state.selectedIssue!==null && state.report?.issues?.[state.selectedIssue]) return state.report.issues[state.selectedIssue];
+    return null;
+  }
+  function currentProblem(){
+    const issue=chosenIssue();
+    return issue ? issue.title : ($("rl-manual-issue").value.trim()||"Problema commerciale da verificare");
+  }
+  function renderReport(){
+    const box=$("rl-audit-source"), report=state.report;
+    if(!report) return;
+    box.hidden=false;
+    $("rl-audit-title").textContent="Audit collegato";
+    $("rl-audit-url").textContent=report.url||"URL non disponibile";
+    $("rl-audit-scores").innerHTML=(report.scores||[]).map(s=>'<div class="rl-score"><span>'+escapeHTML(s.category)+'</span><strong>'+(Number.isFinite(s.score)?escapeHTML(s.score)+"/100":"N/D")+'</strong></div>').join("");
+    const issues=(report.issues||[]).slice(0,8);
+    $("rl-issue-count").textContent=issues.length+" rilievi importati";
+    $("rl-issue-list").innerHTML=issues.length?issues.map((issue,index)=>'<button type="button" class="rl-issue '+(index===state.selectedIssue?"selected":"")+'" data-issue="'+index+'"><span class="rl-issue-radio">'+(index===state.selectedIssue?"✓":"")+'</span><span class="rl-issue-copy"><strong>'+escapeHTML(issue.title)+'</strong><small>'+escapeHTML(issue.description||"Rilievo tecnico da verificare")+'</small></span><span class="rl-priority '+escapeHTML(issue.priority||"low")+'">'+(issue.priority==="high"?"Alta":issue.priority==="medium"?"Media":"Da verificare")+'</span></button>').join(""):'<div class="rl-empty">Il report non contiene rilievi. Descrivi un problema commerciale osservato qui sotto.</div>';
+    $("rl-issue-list").querySelectorAll("[data-issue]").forEach(btn=>btn.addEventListener("click",()=>{
+      state.selectedIssue=Number(btn.dataset.issue);
+      const rec=recommendation(state.report.issues[state.selectedIssue]);
+      $("rl-issue-list").querySelectorAll(".rl-issue").forEach(x=>{const active=Number(x.dataset.issue)===state.selectedIssue;x.classList.toggle("selected",active);x.querySelector(".rl-issue-radio").textContent=active?"✓":"";});
+      $("rl-action").value=rec.action;$("rl-source").value=rec.source;$("rl-kpi").value=rec.kpi;
+    }));
+  }
+  function renderMeasurement(){
+    const issue=chosenIssue(), problem=currentProblem();
+    $("rl-selected-problem").innerHTML='<span class="rl-kicker">PROBLEMA SCELTO</span><strong>'+escapeHTML(problem)+'</strong><p>Obiettivo: '+escapeHTML(goalLabels[$("rl-goal").value]||"Migliorare il risultato commerciale")+'</p>';
+    $("rl-measure-summary").innerHTML='<div><span>Intervento</span><strong>'+escapeHTML($("rl-action").value||"Da definire")+'</strong></div><div><span>KPI</span><strong>'+escapeHTML(kpiLabels[$("rl-kpi").value]||"Da definire")+'</strong></div><div><span>Fonte dati</span><strong>'+escapeHTML($("rl-source").selectedOptions[0]?.textContent||"Da definire")+'</strong></div>';
+    updateResult();
+  }
+  function updateResult(){
+    const before=$("rl-before").value, after=$("rl-after").value, box=$("rl-result");
+    if(before===""||after===""||!Number.isFinite(Number(before))||!Number.isFinite(Number(after))){
+      box.classList.remove("has-value","negative");
+      box.innerHTML='<span class="rl-result-icon">↗</span><div><strong>Risultato non ancora disponibile</strong><p>Inserisci entrambi i valori per calcolare la variazione osservata.</p></div>';return;
+    }
+    const b=Number(before), a=Number(after), diff=a-b, pct=b===0?null:diff/b*100;
+    box.classList.add("has-value");box.classList.toggle("negative",diff<0);
+    const headline=diff>0?"Aumento osservato":diff<0?"Diminuzione osservata":"Nessuna variazione osservata";
+    const change=(diff>0?"+":"")+fmt(diff)+(pct===null?" unità":" ("+(pct>0?"+":"")+fmt(pct)+"%)");
+    box.innerHTML='<span class="rl-result-icon">'+(diff>0?"↗":diff<0?"↘":"=")+'</span><div><strong>'+headline+': '+escapeHTML(change)+'</strong><p>Confronto descrittivo fra i due valori inseriti. Non è una stima di ricavi né una prova di causalità.</p></div>';
+  }
+  function collect(){
+    return {product:"Valeya Revenue Leak",version:"0.2",savedAt:new Date().toISOString(),businessType:$("rl-business").value,goal:$("rl-goal").value,site:state.report?.url||"",problem:currentProblem(),auditIssue:chosenIssue(),action:$("rl-action").value.trim(),source:$("rl-source").value,kpi:$("rl-kpi").value,window:$("rl-window").value,before:$("rl-before").value,after:$("rl-after").value,notes:$("rl-notes").value.trim()};
+  }
+  function save(){
+    const data=collect();
+    try{localStorage.setItem("valeyaRevenueLeakPlan:"+ (data.site||"manual"),JSON.stringify(data));state.saved=true;$("rl-saved").hidden=false;}catch{$("rl-saved").hidden=true;alert("Impossibile salvare in questo browser. Esporta la scheda come JSON.");}
+  }
+  function exportPlan(){
+    const blob=new Blob([JSON.stringify(collect(),null,2)],{type:"application/json"});
+    const url=URL.createObjectURL(blob), link=document.createElement("a");
+    link.href=url;link.download="valeya-revenue-leak-scheda.json";link.click();URL.revokeObjectURL(url);
+  }
+  $("rl-to-plan").addEventListener("click",()=>{
+    if(!chosenIssue()&&!$("rl-manual-issue").value.trim()){ $("rl-manual-issue").focus();$("rl-manual-issue").setCustomValidity("Seleziona un rilievo oppure descrivi il problema.");$("rl-manual-issue").reportValidity();return;}
+    $("rl-manual-issue").setCustomValidity("");
+    const issue=chosenIssue(),rec=issue?recommendation(issue):null;
+    $("rl-selected-problem").innerHTML='<span class="rl-kicker">PROBLEMA SCELTO</span><strong>'+escapeHTML(currentProblem())+'</strong><p>Obiettivo: '+escapeHTML(goalLabels[$("rl-goal").value])+'</p>';
+    if(!$("rl-action").value.trim()) $("rl-action").value=rec?.action||"Verifica il percorso attuale e individua il passaggio che ostacola il contatto.";
+    if(rec){$("rl-source").value=rec.source;$("rl-kpi").value=rec.kpi;}
+    showStep(2);
   });
-  renderAuditContext();
+  $("rl-to-measure").addEventListener("click",()=>{
+    if(!$("rl-action").value.trim()){$("rl-action").focus();$("rl-action").setCustomValidity("Descrivi l'intervento prima di procedere.");$("rl-action").reportValidity();return;}
+    $("rl-action").setCustomValidity("");
+    showStep(3);
+  });
+  document.querySelectorAll("[data-back]").forEach(btn=>btn.addEventListener("click",()=>showStep(Number(btn.dataset.back))));
+  document.querySelectorAll(".rl-step").forEach(btn=>btn.addEventListener("click",()=>{const target=Number(btn.dataset.step);if(target<=state.step)showStep(target);}));
+  ["rl-before","rl-after"].forEach(id=>$(id).addEventListener("input",updateResult));
+  $("rl-save").addEventListener("click",save);
+  $("rl-export").addEventListener("click",exportPlan);
+  $("rl-remove-audit").addEventListener("click",()=>{
+    try{sessionStorage.removeItem("valeyaAuditReport");}catch{}
+    state.report=null;state.selectedIssue=null;$("rl-audit-source").hidden=true;
+    $("rl-issue-count").textContent="0 rilievi importati";
+    $("rl-issue-list").innerHTML='<div class="rl-empty">Report rimosso. Puoi descrivere manualmente il problema.</div>';
+  });
+  try{
+    const raw=sessionStorage.getItem("valeyaAuditReport");
+    const report=raw?JSON.parse(raw):null;
+    if(report?.product==="Audit Valeya"&&Array.isArray(report.issues)){
+      state.report=report;
+      if(report.issues.length)state.selectedIssue=0;
+      renderReport();
+      if(report.issues[0]){
+        const rec=recommendation(report.issues[0]);
+        $("rl-action").value=rec.action;$("rl-source").value=rec.source;$("rl-kpi").value=rec.kpi;
+      }
+    }
+  }catch{}
+  showStep(1);
 })();
