@@ -97,7 +97,7 @@ async function insertIssue(user, workspaceId, issue) {
 }
 async function dashboard(workspaceId) {
   const [issues, scans, measurements] = await Promise.all([
-    supabase("/rest/v1/revenue_leak_issues?workspace_id=eq." + encodeURIComponent(workspaceId) + "&select=id,severity,state,review_date,updated_at,intervention&order=updated_at.desc", { admin: true }),
+    supabase("/rest/v1/revenue_leak_issues?workspace_id=eq." + encodeURIComponent(workspaceId) + "&select=id,title,url,severity,state,review_date,updated_at,intervention&order=updated_at.desc", { admin: true }),
     supabase("/rest/v1/audit_scans?workspace_id=eq." + encodeURIComponent(workspaceId) + "&select=id,created_at,url&order=created_at.desc&limit=10", { admin: true }),
     supabase("/rest/v1/revenue_leak_measurements?workspace_id=eq." + encodeURIComponent(workspaceId) + "&select=id,issue_id,measured_at&order=measured_at.desc&limit=100", { admin: true })
   ]);
