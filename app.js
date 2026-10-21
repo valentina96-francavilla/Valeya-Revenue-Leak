@@ -1,7 +1,7 @@
 (() => {
   "use strict";
   const $=id=>document.getElementById(id);
-  const state={step:1,report:null,selectedIssue:null,saved:false,planId:null};
+  const state={step:1,report:null,selectedIssue:null,saved:false,planId:null,measurements:[]};
   const REPORT_KEY="valeyaAuditReport";
   const REPORT_LATEST="valeyaAuditLatestReportId";
   const PLANS_KEY="valeyaRevenueLeakPlans";
@@ -24,7 +24,7 @@
     state.step=step;
     document.querySelectorAll(".rl-panel-step").forEach(panel=>{const active=Number(panel.dataset.panel)===step;panel.hidden=!active;panel.classList.toggle("active",active);});
     document.querySelectorAll(".rl-step").forEach(btn=>{const n=Number(btn.dataset.step);btn.classList.toggle("active",n===step);btn.classList.toggle("done",n<step);});
-    if(step===3)renderMeasurement();
+    if(step===4){renderMeasurement();renderMeasurementHistory();}
     window.scrollTo({top:0,behavior:"smooth"});
   }
   function chosenIssue(){
@@ -54,20 +54,33 @@
     $("rl-measure-summary").innerHTML='<div><span>Problema</span><strong>'+escapeHTML(problem)+'</strong></div><div><span>Metrica da misurare</span><strong>'+escapeHTML(kpi)+'</strong></div><div><span>Fonte dati</span><strong>'+escapeHTML($("rl-source").selectedOptions[0]?.textContent||"Da definire")+'</strong></div><div><span>Obiettivo</span><strong>'+($("rl-target").value.trim()?escapeHTML($("rl-target").value):"Non definito")+'</strong></div>';
     $("rl-before-help").textContent="Valore di "+kpi.toLocaleLowerCase("it")+" nel periodo iniziale.";
     $("rl-after-help").textContent="Valore osservato della stessa metrica nel periodo successivo.";
+    $("rl-kpi-direction").value=state.kpiDirection||$("rl-kpi-direction").value||"increase";
+    $("rl-kpi-unit").value=state.kpiUnit||$("rl-kpi-unit").value||"";
+    renderMeasurementHistory();
     updateResult();
+  }
+  function renderMeasurementHistory(){
+    const box=$("rl-measurements-history");if(!box)return;
+    const items=state.measurements||[];
+    if(!items.length){box.innerHTML='<div class="rl-empty">Nessuna misurazione registrata. Le nuove verifiche verranno aggiunte quando salvi un risultato osservato.</div>';return;}
+    box.innerHTML=items.slice().reverse().map(m=>'<article class="rl-saved-plan"><div><strong>'+escapeHTML(m.value)+(m.unit?' '+escapeHTML(m.unit):'')+'</strong><p>'+escapeHTML(m.period||"Periodo non specificato")+' · '+escapeHTML(m.source||"Fonte non specificata")+'</p><small>Registrata '+escapeHTML(m.recordedAt?new Date(m.recordedAt).toLocaleString("it-IT"):"data non disponibile")+(m.notes?' · '+escapeHTML(m.notes):'')+'</small></div></article>').join("");
   }
   function updateResult(){
     const before=$("rl-before").value,after=$("rl-after").value,box=$("rl-result");
     if(before===""||after===""||!Number.isFinite(Number(before))||!Number.isFinite(Number(after))){box.classList.remove("has-value","negative");box.innerHTML='<span class="rl-result-icon">↗</span><div><strong>Risultato non ancora disponibile</strong><p>Inserisci valore iniziale e valore osservato per calcolare la variazione. Il nome della metrica e i periodi sono salvati insieme ai numeri.</p></div>';return;}
-    const b=Number(before),a=Number(after),diff=a-b,pct=b===0?null:diff/b*100;
-    box.classList.add("has-value");box.classList.toggle("negative",diff<0);
-    const headline=diff>0?"Aumento osservato":diff<0?"Diminuzione osservata":"Nessuna variazione osservata";
-    const change=(diff>0?"+":"")+fmt(diff)+(pct===null?" unità (valore iniziale zero)":" ("+(pct>0?"+":"")+fmt(pct)+"%)");
-    const target=$("rl-target").value.trim(),goal=target!==""&&Number.isFinite(Number(target))?" Obiettivo: "+fmt(Number(target))+".":"";
-    box.innerHTML='<span class="rl-result-icon">'+(diff>0?"↗":diff<0?"↘":"=")+'</span><div><strong>'+headline+': '+escapeHTML(change)+'</strong><p>Confronto descrittivo fra '+escapeHTML($("rl-before-period").value||"periodo iniziale non specificato")+' e '+escapeHTML($("rl-after-period").value||"periodo successivo non specificato")+'.'+escapeHTML(goal)+' Non dimostra da solo causalità.</p></div>';
+    const b=Number(before),a=Number(after),diff=a-b,pct=b>0?diff/b*100:null;
+    const direction=$("rl-kpi-direction")?.value||"increase";
+    const better=diff===0?null:(direction==="increase"?diff>0:diff<0);
+    box.classList.toggle("has-value",better===true);box.classList.toggle("negative",better===false);
+    const headline=diff===0?"Nessuna variazione osservata":better?"Variazione nella direzione desiderata":"Variazione nella direzione opposta";
+    const unit=$("rl-kpi-unit")?.value.trim()||"unità";
+    const change=(diff>0?"+":"")+fmt(diff)+" "+unit+(pct===null?" (variazione percentuale non calcolabile)":" ("+(pct>0?"+":"")+fmt(pct)+"%)");
+    const target=$("rl-target").value.trim();let goal="";
+    if(target!==""&&Number.isFinite(Number(target))){const t=Number(target),reached=direction==="increase"?a>=t:a<=t;goal=" Obiettivo "+fmt(t)+" "+unit+": "+(reached?"raggiunto":"non ancora raggiunto")+".";}
+    box.innerHTML='<span class="rl-result-icon">'+(better===true?"↗":better===false?"↘":"=")+'</span><div><strong>'+headline+': '+escapeHTML(change)+'</strong><p>Confronto descrittivo fra '+escapeHTML($("rl-before-period").value||"periodo iniziale non specificato")+' e '+escapeHTML($("rl-after-period").value||"periodo successivo non specificato")+'.'+escapeHTML(goal)+' Non dimostra da solo causalità.</p></div>';
   }
   function collect(){
-    return {schemaVersion:"1.0",product:"Valeya Revenue Leak",planId:state.planId||makeId(),reportId:state.report?.reportId||null,reportUrl:state.report?.url||"",reportGeneratedAt:state.report?.generatedAt||null,site:state.report?.url||"",businessType:$("rl-business").value,goal:$("rl-goal").value,problem:currentProblem(),auditIssue:chosenIssue(),auditIssueId:chosenIssue()?.id||null,action:$("rl-action").value.trim(),source:$("rl-source").value,kpi:$("rl-kpi").value,kpiLabel:kpiLabels[$("rl-kpi").value]||"Metrica da definire",window:$("rl-window").value,beforePeriod:$("rl-before-period").value.trim(),before:$("rl-before").value,target:$("rl-target").value,afterPeriod:$("rl-after-period").value.trim(),after:$("rl-after").value,reviewDate:$("rl-review-date").value,notes:$("rl-notes").value.trim(),status:$("rl-after").value!==""?"verifica-registrata":$("rl-review-date").value?"in-attesa-verifica":"da-pianificare",updatedAt:new Date().toISOString(),auditReportSnapshot:state.report?{reportId:state.report.reportId||null,url:state.report.url||"",generatedAt:state.report.generatedAt||null,strategy:state.report.strategy||null}:null};
+    return {schemaVersion:"2.0",product:"Valeya Revenue Leak",planId:state.planId||makeId(),reportId:state.report?.reportId||null,reportUrl:state.report?.url||"",reportGeneratedAt:state.report?.generatedAt||null,site:state.report?.url||"",businessType:$("rl-business").value,goal:$("rl-goal").value,problem:currentProblem(),auditIssue:chosenIssue(),auditIssueId:chosenIssue()?.id||null,action:$("rl-action").value.trim(),interventionStatus:$("rl-intervention-status").value,owner:$("rl-owner").value.trim(),plannedDate:$("rl-planned-date").value,implementedDate:$("rl-implemented-date").value,workNotes:$("rl-work-notes").value.trim(),source:$("rl-source").value,kpi:$("rl-kpi").value,kpiLabel:kpiLabels[$("rl-kpi").value]||"Metrica da definire",kpiDirection:$("rl-kpi-direction").value,kpiUnit:$("rl-kpi-unit").value.trim(),window:$("rl-window").value,beforePeriod:$("rl-before-period").value.trim(),before:$("rl-before").value,target:$("rl-target").value,afterPeriod:$("rl-after-period").value.trim(),after:$("rl-after").value,reviewDate:$("rl-review-date").value,notes:$("rl-notes").value.trim(),measurements:state.measurements||[],status:$("rl-intervention-status").value,updatedAt:new Date().toISOString(),auditReportSnapshot:state.report?{reportId:state.report.reportId||null,url:state.report.url||"",generatedAt:state.report.generatedAt||null,strategy:state.report.strategy||null}:null};
   }
   function save(){
     const data=collect();
