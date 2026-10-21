@@ -188,8 +188,7 @@
   function renderStoredReport(report){
     if(!report||!Array.isArray(report.issues))return;
     lastReport=report;allIssues=report.issues||[];
-    const scoreCards=$("scoreCards");
-    scoreCards.innerHTML=(report.scores||[]).map(s=>'<article class="panel score-card score-'+scoreState((s.score??0)/100)+'"><div class="score-top"><span>'+safe(s.category)+'</span><span class="score-dot"></span></div><div class="score-number">'+(s.score??"N/D")+(s.score!==null?'<span style="font-size:14px">/100</span>':"")+'</div><div class="score-track"><span style="width:'+Math.max(0,Math.min(100,s.score||0))+'%"></span></div></article>').join("");
+    renderScores({lighthouseResult:{categories:Object.fromEntries((report.scores||[]).map(score=>[score.key,{score:score.score===null?null:score.score/100}]))}});
     $("reportUrl").textContent=report.finalUrl||report.url;
     $("reportDate").textContent="Report recuperato · "+new Date(report.generatedAt).toLocaleString("it-IT")+" · "+(report.strategy==="mobile"?"Mobile":"Desktop");
     $("reportSummary").innerHTML='<div class="summary-item"><span class="summary-n">01</span><div><strong>Report recuperato</strong><p>Puoi riaprire i rilievi salvati e trasferirli a Revenue Leak.</p></div></div>';
