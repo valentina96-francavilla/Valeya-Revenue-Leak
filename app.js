@@ -101,8 +101,8 @@
     try{
       state.planId=draft.planId;
       if(draft.after!==""&&Number.isFinite(Number(draft.after))){
-        const signature=[draft.afterPeriod,draft.after,draft.notes].join("|");
-        if(!(state.measurements||[]).some(m=>m.signature===signature))state.measurements.push({measurementId:makeId(),signature,period:draft.afterPeriod||"",value:Number(draft.after),unit:draft.kpiUnit||"",source:draft.source,notes:draft.notes||"",recordedAt:new Date().toISOString()});
+        const signature=[draft.afterPeriodStart,draft.afterPeriodEnd,draft.afterPeriod,draft.after,draft.notes].join("|");
+        if(!(state.measurements||[]).some(m=>m.signature===signature))state.measurements.push({measurementId:makeId(),signature,period:draft.afterPeriodStart&&draft.afterPeriodEnd?draft.afterPeriodStart+" – "+draft.afterPeriodEnd:(draft.afterPeriod||""),value:Number(draft.after),unit:draft.kpiUnit||"",source:draft.source,notes:draft.notes||"",recordedAt:new Date().toISOString()});
       }
       const data=collect();data.measurements=state.measurements;
       const plans=readPlans(),index=plans.findIndex(p=>p.planId===data.planId);
