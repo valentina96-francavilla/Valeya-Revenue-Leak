@@ -44,7 +44,7 @@
       state.selectedIssue=Number(btn.dataset.issue);$("rl-manual-issue").value="";
       const rec=recommendation(state.report.issues[state.selectedIssue]);
       $("rl-issue-list").querySelectorAll(".rl-issue").forEach(x=>{const active=Number(x.dataset.issue)===state.selectedIssue;x.classList.toggle("selected",active);x.querySelector(".rl-issue-radio").textContent=active?"✓":"";});
-      $("rl-action").value=rec.action;$("rl-source").value=rec.source;$("rl-kpi").value=rec.kpi;
+      $("rl-action").value=rec.action;$("rl-source").value=rec.source;$("rl-kpi").value=rec.kpi;if(rec.kpi==="technical"){$("rl-kpi-direction").value="decrease";$("rl-kpi-unit").value="ms";}else if(rec.kpi==="organic")$("rl-kpi-unit").value="clic";
     }));
   }
   function renderMeasurement(){
@@ -163,7 +163,7 @@ if(!state.report&&plan.auditIssue)state.report={product:"Audit Valeya",reportId:
       if(requestedIssue){
         const result=await window.ValeyaIntelligence.call("getIssue",{method:"GET",query:{id:requestedIssue}});
         state.dbIssue=result.issue;const plan=planFromIssue(result.issue,result.measurements);state.plans=[plan,...state.plans.filter(item=>item.planId!==plan.planId)];restorePlan(plan);state.planId=result.issue.id;state.scanId=result.issue.source_scan_id||null;renderSavedPlans();
-        if(plan.auditIssue&&!plan.action){const rec=recommendation(plan.auditIssue);$("rl-action").value=rec.action;$("rl-source").value=rec.source;$("rl-kpi").value=rec.kpi;if(rec.kpi==="technical")$("rl-kpi-direction").value="decrease";}
+        if(plan.auditIssue&&!plan.action){const rec=recommendation(plan.auditIssue);$("rl-action").value=rec.action;$("rl-source").value=rec.source;$("rl-kpi").value=rec.kpi;if(rec.kpi==="technical"){$("rl-kpi-direction").value="decrease";$("rl-kpi-unit").value="ms";}else if(rec.kpi==="organic")$("rl-kpi-unit").value="clic";}
         return;
       }
       if(requestedScan){
