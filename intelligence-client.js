@@ -62,7 +62,7 @@
     if (!response.ok) throw new Error(data.error || "Richiesta non riuscita (" + response.status + ").");
     return data;
   }
-  function renderAuth() {
+  async function signOut() {\n    const old = session;\n    try { if (old?.access_token && config) await fetch(config.url + "/auth/v1/logout", { method: "POST", headers: { apikey: config.publishableKey, Authorization: "Bearer " + old.access_token }, cache: "no-store" }); } catch {}\n    setSession(null);\n  }\n  function renderAuth() {
     let panel = document.getElementById("vi-auth-panel");
     if (!panel) {
       panel = document.createElement("section");
@@ -92,7 +92,7 @@
     if (session?.access_token) {
       controls.innerHTML = '<span class="vi-auth-user">' + safe(session.user?.email || "Account connesso") + '</span><button type="button" id="vi-auth-logout">Esci</button>';
       noteEl.textContent = "Dati salvati nel workspace, non nel browser.";
-      document.getElementById("vi-auth-logout").addEventListener("click", () => setSession(null));
+      document.getElementById("vi-auth-logout").addEventListener("click", () => signOut());
     }
   }
   function note(message) { const el = document.getElementById("vi-auth-note"); if (el) el.textContent = message; }
@@ -101,5 +101,5 @@
   document.head.appendChild(style);
   renderAuth();
   loadConfig().then(() => { readyResolve(); renderAuth(); window.dispatchEvent(new CustomEvent("valeya-intelligence-ready")); }).catch(error => { readyResolve(); note(error.message + " I dati non possono ancora essere sincronizzati."); window.dispatchEvent(new CustomEvent("valeya-intelligence-ready")); });
-  window.ValeyaIntelligence = { ready, signIn, signUp, signOut: () => setSession(null), getSession: () => session, call };
+  window.ValeyaIntelligence = { ready, signIn, signUp, signOut, getSession: () => session, call };
 })();
