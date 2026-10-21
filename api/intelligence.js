@@ -136,7 +136,7 @@ export default async function handler(req, res) {
     if (req.method === "POST" && action === "saveScan") {
       const report = req.body?.report;
       if (!report || !Array.isArray(report.issues) || !report.url || !["mobile","desktop"].includes(report.strategy)) return json(res,400,{error:"Report Audit non valido."});
-      if (JSON.stringify(report).length > 4_000_000) return json(res,413,{error:"Report troppo grande per essere salvato."});
+      if (Buffer.byteLength(JSON.stringify(report), "utf8") > 4_000_000) return json(res,413,{error:"Report troppo grande per essere salvato."});
       const scanPayload = { workspace_id: workspaceId, created_by: user.id, url: report.url, final_url: report.finalUrl || report.url, strategy: report.strategy, scores: report.scores || [], raw_report: report, lighthouse_version: report.lighthouseVersion || null, generated_at: report.generatedAt || new Date().toISOString() };
       const findings = report.issues.map(i => ({...i, url: report.finalUrl || report.url, recommendation: { steps: i.verificationSteps || [], rationale: i.priorityRationale || "" }}));
       const saved = await supabase("/rest/v1/rpc/save_audit_scan", { method:"POST", admin:true, body:{p_scan:scanPayload,p_findings:findings} });
@@ -165,7 +165,7 @@ export default async function handler(req, res) {
       const parent = await supabase("/rest/v1/revenue_leak_issues?id=eq." + encodeURIComponent(issueId) + "&workspace_id=eq." + encodeURIComponent(workspaceId) + "&select=id,kpi_key&limit=1",{admin:true});
       if (!parent?.length) return json(res,404,{error:"Scheda non trovata nel workspace."});
       if (m.value === "" || !Number.isFinite(Number(m.value))) return json(res,400,{error:"Inserisci un valore numerico osservato."});
-      const row = {workspace_id:workspaceId,issue_id:issueId,created_by:user.id,kpi_key:m.kpi_key || parent[0].kpi_key,observed_value:Number(m.value),unit:m.unit || null,measured_at:m.measured_at || new Date().toISOString(),period_start:m.period_start || null,period_end:m.period_end || null,notes:String(m.notes || "").slice(0,4000)};
+      const row = {workspace_id:workspaceId,issue_id:issueId,created_by:user.id,kpi_key:m.kpi_key || parent[0].kpi_key,observed_value:Number(m.value),unit:m.unit || null,period_label:String(m.period_label || "").slice(0,300) || null,measured_at:m.measured_at || new Date().toISOString(),period_start:m.period_start || null,period_end:m.period_end || null,notes:String(m.notes || "").slice(0,4000)};
       const result = await supabase("/rest/v1/revenue_leak_measurements",{method:"POST",admin:true,body:row,prefer:"return=representation"});
       return json(res,201,{measurement:result?.[0]});
     }
