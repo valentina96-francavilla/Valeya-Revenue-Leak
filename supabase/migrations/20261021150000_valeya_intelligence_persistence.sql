@@ -168,6 +168,7 @@ end;
 $$;
 
 revoke all on function public.save_audit_scan(jsonb,jsonb) from public,anon,authenticated;
+grant select on public.workspaces,public.workspace_members,public.audit_scans,public.audit_findings,public.revenue_leak_issues,public.revenue_leak_measurements to authenticated;
 grant usage on schema public to service_role;
 grant all on public.workspaces,public.workspace_members,public.audit_scans,public.audit_findings,
   public.revenue_leak_issues,public.revenue_leak_measurements to service_role;
