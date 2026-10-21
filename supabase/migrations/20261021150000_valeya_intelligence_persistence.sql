@@ -110,7 +110,7 @@ alter table public.revenue_leak_measurements enable row level security;
 create policy "members can read their workspaces" on public.workspaces
   for select to authenticated using (exists (
     select 1 from public.workspace_members wm
-    where wm.workspace_id = id and wm.user_id = (select auth.uid())
+    where wm.workspace_id = public.workspaces.id and wm.user_id = (select auth.uid())
   ));
 create policy "owners can create workspaces" on public.workspaces
   for insert to authenticated with check (owner_id = (select auth.uid()));
@@ -123,45 +123,45 @@ create policy "members can read workspace membership" on public.workspace_member
 
 create policy "members can read audit scans" on public.audit_scans
   for select to authenticated using (exists (
-    select 1 from public.workspace_members wm where wm.workspace_id = workspace_id and wm.user_id = (select auth.uid())
+    select 1 from public.workspace_members wm where wm.workspace_id = public.audit_scans.workspace_id and wm.user_id = (select auth.uid())
   ));
 create policy "members can insert audit scans" on public.audit_scans
   for insert to authenticated with check (created_by = (select auth.uid()) and exists (
-    select 1 from public.workspace_members wm where wm.workspace_id = workspace_id and wm.user_id = (select auth.uid())
+    select 1 from public.workspace_members wm where wm.workspace_id = public.audit_scans.workspace_id and wm.user_id = (select auth.uid())
   ));
 -- Audit scans and findings are append-only: no UPDATE or DELETE policies.
 
 create policy "members can read audit findings" on public.audit_findings
   for select to authenticated using (exists (
-    select 1 from public.workspace_members wm where wm.workspace_id = workspace_id and wm.user_id = (select auth.uid())
+    select 1 from public.workspace_members wm where wm.workspace_id = public.audit_findings.workspace_id and wm.user_id = (select auth.uid())
   ));
 create policy "members can insert audit findings" on public.audit_findings
   for insert to authenticated with check (exists (
-    select 1 from public.workspace_members wm where wm.workspace_id = workspace_id and wm.user_id = (select auth.uid())
+    select 1 from public.workspace_members wm where wm.workspace_id = public.audit_findings.workspace_id and wm.user_id = (select auth.uid())
   ));
 
 create policy "members can read issues" on public.revenue_leak_issues
   for select to authenticated using (exists (
-    select 1 from public.workspace_members wm where wm.workspace_id = workspace_id and wm.user_id = (select auth.uid())
+    select 1 from public.workspace_members wm where wm.workspace_id = public.revenue_leak_issues.workspace_id and wm.user_id = (select auth.uid())
   ));
 create policy "members can create issues" on public.revenue_leak_issues
   for insert to authenticated with check (created_by = (select auth.uid()) and exists (
-    select 1 from public.workspace_members wm where wm.workspace_id = workspace_id and wm.user_id = (select auth.uid())
+    select 1 from public.workspace_members wm where wm.workspace_id = public.revenue_leak_issues.workspace_id and wm.user_id = (select auth.uid())
   ));
 create policy "members can update issues" on public.revenue_leak_issues
   for update to authenticated using (exists (
-    select 1 from public.workspace_members wm where wm.workspace_id = workspace_id and wm.user_id = (select auth.uid())
+    select 1 from public.workspace_members wm where wm.workspace_id = public.revenue_leak_issues.workspace_id and wm.user_id = (select auth.uid())
   )) with check (exists (
-    select 1 from public.workspace_members wm where wm.workspace_id = workspace_id and wm.user_id = (select auth.uid())
+    select 1 from public.workspace_members wm where wm.workspace_id = public.revenue_leak_issues.workspace_id and wm.user_id = (select auth.uid())
   ));
 
 create policy "members can read measurements" on public.revenue_leak_measurements
   for select to authenticated using (exists (
-    select 1 from public.workspace_members wm where wm.workspace_id = workspace_id and wm.user_id = (select auth.uid())
+    select 1 from public.workspace_members wm where wm.workspace_id = public.revenue_leak_measurements.workspace_id and wm.user_id = (select auth.uid())
   ));
 create policy "members can create measurements" on public.revenue_leak_measurements
   for insert to authenticated with check (created_by = (select auth.uid()) and exists (
-    select 1 from public.workspace_members wm where wm.workspace_id = workspace_id and wm.user_id = (select auth.uid())
+    select 1 from public.workspace_members wm where wm.workspace_id = public.revenue_leak_measurements.workspace_id and wm.user_id = (select auth.uid())
   ));
 
 -- Keep the API service-role-only RPC narrow and non-public; inserts happen atomically.
