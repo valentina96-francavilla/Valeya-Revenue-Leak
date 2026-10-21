@@ -54,7 +54,7 @@
   }
   function structuredEvidence(audit){
     const d=audit.details||{};
-    const evidence={type:d.type||null};
+    const evidence={type:d.type||null,rawDetails:d};
     ["overallSavingsMs","overallSavingsBytes","overallSavingsWastedMs","overallSavingsWastedBytes","scale","summary","source","url","metricSavings","debugData","headings"].forEach(k=>{if(d[k]!==undefined)evidence[k]=d[k];});
     if(Array.isArray(d.items)){evidence.itemCount=d.items.length;evidence.items=d.items;}
     if(Array.isArray(d.nodes)){evidence.nodeCount=d.nodes.length;evidence.nodes=d.nodes;}
