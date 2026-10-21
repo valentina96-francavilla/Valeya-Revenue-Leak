@@ -37,7 +37,7 @@
     return parsed.href;
   }
   async function runPageSpeed(target,strategy){
-    const endpoint="https://valeya-audit-revenue-dashboard.vercel.app/api/audit";
+    const endpoint=location.hostname.endsWith(".vercel.app")?"/api/audit":"https://valeya-audit-revenue-dashboard.vercel.app/api/audit";
     let response;
     try{response=await fetch(endpoint,{method:"POST",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify({url:target,strategy})});}
     catch{throw new Error("Impossibile raggiungere il servizio Audit. Verifica la connessione e riprova.");}
