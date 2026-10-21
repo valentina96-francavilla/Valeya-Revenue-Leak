@@ -4,6 +4,7 @@ import { isIP } from "node:net";
 export const config = { maxDuration: 60 };
 
 const ALLOWED_ORIGIN = "https://audit.valeyastudio.it";
+const isAllowedOrigin = origin => origin === ALLOWED_ORIGIN || /^https:\/\/valeya-audit-revenue-dashboard-[a-z0-9-]+\.vercel\.app$/i.test(origin || "");
 const MAX_BODY_BYTES = 4096;
 const RATE_WINDOW_MS = 10 * 60 * 1000;
 const RATE_LIMIT = 5;
@@ -77,7 +78,7 @@ export default async function handler(req, res) {
   res.setHeader("Cache-Control", "no-store");
   res.setHeader("X-Content-Type-Options", "nosniff");
 
-  if (origin === ALLOWED_ORIGIN) {
+  if (isAllowedOrigin(origin)) {
     res.setHeader("Access-Control-Allow-Origin", ALLOWED_ORIGIN);
   } else if (origin) {
     return error(res, 403, "Origine non autorizzata.");
