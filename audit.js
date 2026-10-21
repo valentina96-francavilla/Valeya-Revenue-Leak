@@ -192,7 +192,7 @@
     $("reportUrl").textContent=report.finalUrl||report.url;
     $("reportDate").textContent="Report recuperato · "+new Date(report.generatedAt).toLocaleString("it-IT")+" · "+(report.strategy==="mobile"?"Mobile":"Desktop");
     $("reportSummary").innerHTML='<div class="summary-item"><span class="summary-n">01</span><div><strong>Report recuperato</strong><p>Puoi riaprire i rilievi salvati e trasferirli a Revenue Leak.</p></div></div>';
-    renderIssueList();results.classList.add("show");$("revenueLeakLink").href="revenue-leak.html?report="+encodeURIComponent(report.reportId);
+    renderIssueList();document.querySelectorAll("[data-transform-issue]").forEach(button=>{button.disabled=!report.scanId;button.title=report.scanId?"Crea una scheda operativa in Revenue Leak":"Salva la scansione nel workspace per abilitare il trasferimento";});results.classList.add("show");$("revenueLeakLink").href=report.scanId?"revenue-leak.html?scan="+encodeURIComponent(report.scanId):"revenue-leak.html";
   }
   form.addEventListener("submit",async event=>{
     event.preventDefault();let target;
