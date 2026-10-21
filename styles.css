@@ -143,3 +143,57 @@ body.rl-clean{background:#f7f7fa;color:#252431}
 /* Revenue Leak v0.3: archivio locale delle schede */
 .rl-saved-plans{margin-top:18px}.rl-saved-plans-list{display:grid;gap:10px}.rl-saved-plan{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:14px;border:1px solid #30313e;background:#191a24;border-radius:10px}.rl-saved-plan>div:first-child{min-width:0}.rl-saved-plan strong{display:block;overflow-wrap:anywhere}.rl-saved-plan p{margin:5px 0;color:#b7b8c5;font-size:12px}.rl-saved-plan small{color:#8f90a1;font-size:10px}.rl-saved-plan-actions{display:flex;gap:8px;flex:none}.rl-measure-summary{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.rl-measure-summary>div{min-width:0}.rl-measure-summary strong{overflow-wrap:anywhere}.rl-issue{align-items:flex-start}.rl-issue-copy{min-width:0}.rl-issue-copy small{display:block;margin-top:4px;color:#999bad;font-size:10px;line-height:1.5}
 @media(max-width:650px){.rl-saved-plan{align-items:flex-start;flex-direction:column}.rl-saved-plan-actions{width:100%;flex-wrap:wrap}.rl-measure-summary{grid-template-columns:1fr}}
+
+/* Revenue Leak v0.4: dark operational workspace */
+body.rl-clean{background:#101116;color:#e9e8f0}
+.rl-clean .rl-main{color:#e9e8f0}
+.rl-clean .topbar{color:#aaa9b8;border-color:#292a35}
+.rl-clean .topbar strong{color:#f3f2f8}
+.rl-hero h1{color:#f3f2f8}
+.rl-hero p,.rl-panel-head p,.rl-muted{color:#a5a4b4}
+.rl-stepper,.rl-audit-source,.rl-panel{background:#191a22;border-color:#30313d;box-shadow:none}
+.rl-step-line{background:#30313d}
+.rl-step>span:first-child{background:#262733;color:#b9b7c9}
+.rl-step strong{color:#d5d3e0}.rl-step small{color:#9695a8}
+.rl-step.active>span:first-child,.rl-step.done>span:first-child{background:#342c58;color:#c4b8ff}
+.rl-step.active strong{color:#d0c6ff}
+.rl-source-top p{color:#a5a4b4}
+.rl-text-button,.rl-secondary{background:#20212b;border-color:#393a48;color:#d1cfdd}
+.rl-score,.rl-measure-summary>div{background:#20212b;border-color:#343541}
+.rl-score span,.rl-measure-summary span{color:#aaa9b8}
+.rl-score strong,.rl-measure-summary strong{color:#f0eef8}
+.rl-panel-head{border-color:#30313d}
+.rl-panel-count{background:#282935;color:#c0becf}
+.rl-field{color:#d5d3e0}
+.rl-field select,.rl-field input,.rl-field textarea{background:#20212b;border-color:#3a3b49;color:#f0eef8}
+.rl-field select:focus,.rl-field input:focus,.rl-field textarea:focus{border-color:#9582f0;box-shadow:0 0 0 3px rgba(112,88,223,.16)}
+.rl-field select option{background:#20212b;color:#f0eef8}
+.rl-field small{color:#a09fb0}
+.rl-subhead h3{color:#e8e6f1}
+.rl-count{color:#a09fb0}
+.rl-issue{background:#20212b;border-color:#383946}
+.rl-issue.selected{background:#29243d;border-color:#9582f0}
+.rl-issue-radio{border-color:#555565}
+.rl-issue-copy strong{color:#eeeaf8}
+.rl-issue-copy small{color:#aaa9b8}
+.rl-empty{background:#1c1d26;border-color:#3a3b48;color:#aaa9b8}
+.rl-note{background:#242139;border-color:#3b355e}
+.rl-note strong{color:#c7bcff}.rl-note span{color:#c0bbd5}
+.rl-note-warning{background:#30271c;border-color:#59452b}
+.rl-note-warning strong{color:#f1c27e}.rl-note-warning span{color:#d4c0a0}
+.rl-selected-problem{background:#242139;border-color:#3b355e}
+.rl-selected-problem strong{color:#f0eef8}.rl-selected-problem p{color:#b7b4c8}
+.rl-result{background:#20212b;border-color:#383946}
+.rl-result strong{color:#eeeaf8}.rl-result p{color:#aaa9b8}
+.rl-result.has-value{background:#192b25;border-color:#315643}
+.rl-result.has-value .rl-result-icon{background:#254333;color:#9fe0ba}
+.rl-result.negative{background:#302020;border-color:#60403e}
+.rl-result.negative .rl-result-icon{background:#4a2b2a;color:#ffb3aa}
+.rl-bottom-info{background:#191a22;border-color:#30313d}
+.rl-bottom-info h2,.rl-mini-step strong{color:#e8e6f1}
+.rl-mini-step p{color:#a5a4b4}
+.rl-audit-link{background:#20212b;border-color:#393a48;color:#c5bbff}
+.rl-saved{color:#9fe0ba}
+.rl-clean .pagefoot{color:#a5a4b4;border-color:#30313d}
+.rl-clean .pagefoot strong{color:#f0eef8}
+@media(max-width:680px){.rl-stepper{background:#191a22;border-color:#30313d}.rl-stepper .rl-step{min-width:0}}
