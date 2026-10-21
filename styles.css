@@ -88,3 +88,10 @@
 .audit-action-status{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:11px;font-size:9px;font-weight:700;color:#656575}
 .audit-action-status select{max-width:58%;font:500 9px var(--font);padding:7px 8px;border:1px solid #e4e2ec;border-radius:6px;background:#fff;color:#474653}
 @media(max-width:680px){.audit-action-plan-head{flex-direction:column}.audit-action-plan-list{grid-template-columns:1fr}.audit-action-status{align-items:flex-start;flex-direction:column}.audit-action-status select{max-width:100%;width:100%}}
+
+.audit-action-measurement{margin-top:10px;padding-top:10px;border-top:1px solid #f0eff5}
+.audit-action-measurement>strong{font-size:9px;color:#373544}
+.audit-measurement-fields{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:7px}
+.audit-measurement-fields label{display:block;font-size:8px;color:#777985}
+.audit-measurement-fields input{box-sizing:border-box;width:100%;margin-top:5px;padding:8px;border:1px solid #e4e2ec;border-radius:6px;background:#fff;color:#373544;font:500 9px var(--font)}
+.audit-action-measurement>small{display:block;margin-top:7px;font-size:8px;line-height:1.5;color:#92939e}
