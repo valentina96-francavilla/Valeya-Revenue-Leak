@@ -40,3 +40,9 @@ input::placeholder,textarea::placeholder{color:#898a9b!important}
 .empty{background:#1c1d27;color:#bfc0ce;border-color:#343542}
 .issue-details pre.evidence-json{max-height:320px;overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere;background:#111218;border:1px solid #30313e;border-radius:7px;padding:12px;color:#d0d1df;font:11px/1.55 ui-monospace,SFMono-Regular,Menlo,monospace}
 @media(max-width:760px){.shell{display:block}.sidebar{position:relative;width:100%;height:auto;padding:12px 16px;flex-direction:row;align-items:center;justify-content:space-between}.sidebar nav,.nav-label,.side-bottom{display:none}.main{margin-left:0;padding:0 14px}.topbar{position:relative}.hero{padding:25px 0 18px}.hero-side{width:100%}.results-head{display:flex;flex-direction:column;gap:14px}.actions{display:flex;flex-wrap:wrap;gap:8px}.actions>*{max-width:100%}.report-grid{grid-template-columns:minmax(0,1fr)}}
+
+/* Valeya Intelligence operational clarity */
+.score-business-note{margin:10px 0 0;color:#c5bbff;font-size:11px;line-height:1.55;font-weight:600}
+.transform-issue{display:inline-flex;align-items:center;gap:8px;margin-top:13px;padding:9px 12px;border:1px solid #7560dc;border-radius:7px;background:#29243d;color:#d8d0ff;font:700 11px system-ui,sans-serif;cursor:pointer}
+.transform-issue:disabled{opacity:.55;cursor:not-allowed}
+.evidence-json{max-width:100%;max-height:560px;overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere;padding:12px;background:#15161d;border:1px solid #30313d;border-radius:8px;color:#ddd9ed;font-size:10px;line-height:1.5}
