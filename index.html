@@ -17,7 +17,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="audit.css">
+  <link rel="stylesheet" href="./audit.css?v=0.3">
 </head>
 <body>
   <div class="shell">
@@ -91,6 +91,12 @@
           <section class="panel issues-panel">
             <h3 class="panel-title">Problemi da verificare</h3>
             <div class="panel-subtitle" id="issueCount">I controlli con il punteggio più basso, ordinati per priorità tecnica.</div>
+            <div class="issue-tools" role="search" aria-label="Cerca e filtra i rilievi">
+              <label for="issueSearch">Cerca rilievi<input id="issueSearch" type="search" placeholder="Titolo, descrizione o ID…"></label>
+              <label for="issueCategoryFilter">Categoria<select id="issueCategoryFilter"><option value="">Tutte le categorie</option><option value="performance">Performance</option><option value="accessibility">Accessibilità</option><option value="best-practices">Best practice</option><option value="seo">SEO</option><option value="other">Altri controlli</option></select></label>
+              <label for="issuePriorityFilter">Priorità<select id="issuePriorityFilter"><option value="">Tutte le priorità</option><option value="high">Alta</option><option value="medium">Media</option><option value="low">Bassa</option></select></label>
+              <label for="issueSort">Ordina per<select id="issueSort"><option value="priority">Priorità consigliata</option><option value="score">Punteggio Lighthouse</option><option value="effort">Sforzo minore</option><option value="category">Categoria</option></select></label>
+            </div>
             <div id="issueList" class="issue-list"></div>
           </section>
           <aside class="panel summary-panel">
@@ -110,6 +116,6 @@
     </main>
   </div>
   <div id="toast" class="toast" role="status"></div>
-  <script src="audit.js" defer></script>
+  <script src="./audit.js?v=0.3" defer></script>
 </body>
 </html>
