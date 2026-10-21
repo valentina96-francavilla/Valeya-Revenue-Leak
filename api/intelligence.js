@@ -136,7 +136,7 @@ export default async function handler(req, res) {
     if (req.method === "POST" && action === "saveScan") {
       const report = req.body?.report;
       if (!report || !Array.isArray(report.issues) || !report.url || !["mobile","desktop"].includes(report.strategy)) return json(res,400,{error:"Report Audit non valido."});
-      if (JSON.stringify(report).length > 2_000_000) return json(res,413,{error:"Report troppo grande per essere salvato."});
+      if (JSON.stringify(report).length > 4_000_000) return json(res,413,{error:"Report troppo grande per essere salvato."});
       const scanPayload = { workspace_id: workspaceId, created_by: user.id, url: report.url, final_url: report.finalUrl || report.url, strategy: report.strategy, scores: report.scores || [], raw_report: report, lighthouse_version: report.lighthouseVersion || null, generated_at: report.generatedAt || new Date().toISOString() };
       const findings = report.issues.map(i => ({...i, url: report.finalUrl || report.url, recommendation: { steps: i.verificationSteps || [], rationale: i.priorityRationale || "" }}));
       const saved = await supabase("/rest/v1/rpc/save_audit_scan", { method:"POST", admin:true, body:{p_scan:scanPayload,p_findings:findings} });
