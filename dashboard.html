@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Valeya Intelligence: dashboard operativa per sapere cosa fare adesso.">
+  <title>Cosa fare adesso · Valeya Intelligence</title>
+  <link rel="stylesheet" href="./audit.css?v=1">
+  <style>
+    body{background:#101116;color:#eeeaf8}.main{max-width:1200px}.topbar{border-color:#30313d}.dashboard-hero{padding:34px 0 24px}.dashboard-hero .eyebrow{color:#a99af8;font-size:10px;letter-spacing:1.5px;font-weight:800}.dashboard-hero h1{font-size:clamp(30px,4vw,44px);line-height:1.1;margin:12px 0}.dashboard-hero p{max-width:700px;color:#aaa9b8;line-height:1.7}.dash-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:15px}.dash-card{padding:20px;border:1px solid #30313d;background:#191a22;border-radius:12px;min-width:0}.dash-card h2{font-size:14px;margin:0 0 12px;line-height:1.5}.dash-count{font-size:35px;font-weight:800;letter-spacing:-1px;margin-bottom:8px}.dash-card p{font-size:12px;line-height:1.6;color:#aaa9b8;margin:0}.dash-card.due{border-top:3px solid #d9a441}.dash-card.critical{border-top:3px solid #df5c65}.dash-card.waiting{border-top:3px solid #4caf83}.dash-list{display:grid;gap:9px;margin-top:15px}.dash-item{padding:11px;border:1px solid #30313d;border-radius:8px;background:#20212b}.dash-item strong{display:block;font-size:12px;line-height:1.5}.dash-item small{display:block;margin-top:5px;color:#aaa9b8;font-size:10px}.dash-item a{display:inline-block;margin-top:8px;color:#c5bbff;font-size:11px;text-decoration:none}.dash-empty{margin-top:14px;padding:13px;border:1px dashed #3a3b49;border-radius:8px;color:#aaa9b8;font-size:12px;line-height:1.6}.dash-secondary{margin-top:20px;padding:18px;border:1px solid #30313d;border-radius:12px;background:#191a22}.dash-secondary h2{font-size:15px;margin:0 0 10px}.dash-links{display:flex;flex-wrap:wrap;gap:9px;margin-top:14px}.dash-links a{padding:10px 13px;border:1px solid #3a3b49;border-radius:8px;background:#20212b;color:#eeeaf8;text-decoration:none;font-size:12px}.dash-status{margin:0 0 15px;color:#c5bbff;font-size:12px;min-height:18px}@media(max-width:850px){.dash-grid{grid-template-columns:1fr}.dashboard-hero{padding-top:22px}}
+  </style>
+</head>
+<body>
+<div class="shell">
+  <aside class="sidebar">
+    <a class="brand" href="./index.html" aria-label="Valeya Intelligence"><span class="brand-mark">v.</span><span>valeya<small>/ intelligence</small></span></a>
+    <p class="nav-label">WORKSPACE</p>
+    <nav aria-label="Navigazione principale">
+      <a class="nav" href="./index.html"><span class="ico">⌕</span><span>Audit del sito</span></a>
+      <a class="nav active" href="./dashboard.html"><span class="ico">▦</span><span>Cosa fare adesso</span></a>
+      <a class="nav" href="./revenue-leak.html"><span class="ico">↗</span><span>Revenue Leak</span></a>
+    </nav>
+    <div class="side-bottom"><div class="side-note"><strong>Dai dati<br>alle decisioni.</strong><p>Problemi aperti, verifiche in scadenza e risultati da misurare.</p></div><div class="side-foot">VALEYA STUDIO · INTELLIGENCE</div></div>
+  </aside>
+  <main class="main">
+    <header class="topbar"><div class="crumb">Workspace <span aria-hidden="true">/</span> <strong>Cosa fare adesso</strong></div><span class="demo-pill"><i></i> VISTA OPERATIVA</span></header>
+    <section class="dashboard-hero"><div class="eyebrow">VALeya INTELLIGENCE · OPERATIONS</div><h1>Cosa fare adesso.</h1><p>Una vista delle attività che richiedono attenzione. I conteggi sono calcolati sui dati salvati nel workspace, non su esempi dimostrativi.</p></section>
+    <p id="dash-status" class="dash-status" role="status" aria-live="polite">Caricamento delle attività…</p>
+    <section class="dash-grid" aria-label="Priorità operative">
+      <article class="dash-card due"><h2>⚠️ Verifiche KPI in scadenza</h2><div class="dash-count" id="due-count">—</div><p>Interventi per cui la data di verifica è arrivata o è passata.</p><div id="due-list" class="dash-list"><div class="dash-empty">Caricamento…</div></div></article>
+      <article class="dash-card critical"><h2>🔴 Problemi critici non presi in carico</h2><div class="dash-count" id="critical-count">—</div><p>Problemi ad alta priorità ancora aperti e senza presa in carico.</p><div id="critical-list" class="dash-list"><div class="dash-empty">Caricamento…</div></div></article>
+      <article class="dash-card waiting"><h2>✅ Interventi completati da misurare</h2><div class="dash-count" id="waiting-count">—</div><p>Lavoro completato, ma senza una misurazione di riscontro registrata.</p><div id="waiting-list" class="dash-list"><div class="dash-empty">Caricamento…</div></div></article>
+    </section>
+    <section class="dash-secondary"><h2>Prossimi passi</h2><p class="dash-status">Apri una scheda per completare l'intervento, registrare un dato oppure rivedere la priorità.</p><div class="dash-links"><a href="./index.html#audit">Avvia un audit</a><a href="./revenue-leak.html">Apri Revenue Leak</a><a href="./index.html">Torna ai report Audit</a></div></section>
+  </main>
+</div>
+<script src="./intelligence-client.js?v=1" defer></script>
+<script src="./dashboard.js?v=1" defer></script>
+</body></html>
