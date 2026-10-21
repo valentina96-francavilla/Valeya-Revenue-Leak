@@ -54,8 +54,6 @@
     $("rl-measure-summary").innerHTML='<div><span>Problema</span><strong>'+escapeHTML(problem)+'</strong></div><div><span>Metrica da misurare</span><strong>'+escapeHTML(kpi)+'</strong></div><div><span>Fonte dati</span><strong>'+escapeHTML($("rl-source").selectedOptions[0]?.textContent||"Da definire")+'</strong></div><div><span>Obiettivo</span><strong>'+($("rl-target").value.trim()?escapeHTML($("rl-target").value):"Non definito")+'</strong></div>';
     $("rl-before-help").textContent="Valore di "+kpi.toLocaleLowerCase("it")+" nel periodo iniziale.";
     $("rl-after-help").textContent="Valore osservato della stessa metrica nel periodo successivo.";
-    $("rl-kpi-direction").value=state.kpiDirection||$("rl-kpi-direction").value||"increase";
-    $("rl-kpi-unit").value=state.kpiUnit||$("rl-kpi-unit").value||"";
     renderMeasurementHistory();
     updateResult();
   }
@@ -85,6 +83,7 @@
   function save(){
     const draft=collect();
     try{
+      state.planId=draft.planId;
       if(draft.after!==""&&Number.isFinite(Number(draft.after))){
         const signature=[draft.afterPeriod,draft.after,draft.notes].join("|");
         if(!(state.measurements||[]).some(m=>m.signature===signature))state.measurements.push({measurementId:makeId(),signature,period:draft.afterPeriod||"",value:Number(draft.after),unit:draft.kpiUnit||"",source:draft.source,notes:draft.notes||"",recordedAt:new Date().toISOString()});
