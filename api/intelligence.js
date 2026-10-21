@@ -123,7 +123,11 @@ async function dashboard(workspaceId) {
 export default async function handler(req, res) {
   if (!headersFor(req, res)) return json(res, 403, { error: "Origine non autorizzata." });
   if (req.method === "OPTIONS") return res.status(204).end();
-  const action = req.method === "GET" ? String(req.query?.action || "config") : String(req.body?.action || "");
+  let body = req.body;
+  if (req.method === "POST" && typeof body === "string") {
+    try { body = JSON.parse(body); } catch { return json(res,400,{error:"Corpo JSON non valido."}); }
+  }
+  const action = req.method === "GET" ? String(req.query?.action || "config") : String(body?.action || "");
   if (req.method === "GET" && action === "config") {
     const base = SUPABASE_URL(), key = PUBLIC_KEY();
     if (!base || !key) return json(res, 503, { error: "Configurazione Supabase assente." });
@@ -134,7 +138,7 @@ export default async function handler(req, res) {
     const { user } = await requireUser(req);
     const workspaceId = await ensureWorkspace(user);
     if (req.method === "POST" && action === "saveScan") {
-      const report = req.body?.report;
+      const report = body?.report;
       if (!report || !Array.isArray(report.issues) || !report.url || !["mobile","desktop"].includes(report.strategy)) return json(res,400,{error:"Report Audit non valido."});
       if (Buffer.byteLength(JSON.stringify(report), "utf8") > 4_000_000) return json(res,413,{error:"Report troppo grande per essere salvato."});
       const scanPayload = { workspace_id: workspaceId, created_by: user.id, url: report.url, final_url: report.finalUrl || report.url, strategy: report.strategy, scores: report.scores || [], raw_report: report, lighthouse_version: report.lighthouseVersion || null, generated_at: report.generatedAt || new Date().toISOString() };
@@ -143,14 +147,14 @@ export default async function handler(req, res) {
       return json(res,201,{scanId:saved,workspaceId});
     }
     if (req.method === "POST" && action === "createIssue") {
-      const issue = req.body?.issue;
+      const issue = body?.issue;
       if (!issue || typeof issue !== "object") return json(res,400,{error:"Problema non valido."});
       const result = await insertIssue(user,workspaceId,issue);
       return json(res,201,{issue:result,workspaceId});
     }
     if (req.method === "POST" && action === "updateIssue") {
-      const id = String(req.body?.issueId || "");
-      const updates = req.body?.updates;
+      const id = String(body?.issueId || "");
+      const updates = body?.updates;
       if (!id || !updates || typeof updates !== "object") return json(res,400,{error:"Aggiornamento non valido."});
       const existing = await supabase("/rest/v1/revenue_leak_issues?id=eq." + encodeURIComponent(id) + "&workspace_id=eq." + encodeURIComponent(workspaceId) + "&select=id&limit=1",{admin:true});
       if (!existing?.length) return json(res,404,{error:"Scheda non trovata nel workspace."});
@@ -161,7 +165,7 @@ export default async function handler(req, res) {
       return json(res,200,{issue:result?.[0] || null});
     }
     if (req.method === "POST" && action === "addMeasurement") {
-      const issueId = String(req.body?.issueId || ""), m = req.body?.measurement || {};
+      const issueId = String(body?.issueId || ""), m = body?.measurement || {};
       const parent = await supabase("/rest/v1/revenue_leak_issues?id=eq." + encodeURIComponent(issueId) + "&workspace_id=eq." + encodeURIComponent(workspaceId) + "&select=id,kpi_key&limit=1",{admin:true});
       if (!parent?.length) return json(res,404,{error:"Scheda non trovata nel workspace."});
       if (m.value === "" || !Number.isFinite(Number(m.value))) return json(res,400,{error:"Inserisci un valore numerico osservato."});
