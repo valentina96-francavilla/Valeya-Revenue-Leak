@@ -112,11 +112,6 @@ create policy "members can read their workspaces" on public.workspaces
     select 1 from public.workspace_members wm
     where wm.workspace_id = public.workspaces.id and wm.user_id = (select auth.uid())
   ));
-create policy "owners can create workspaces" on public.workspaces
-  for insert to authenticated with check (owner_id = (select auth.uid()));
-create policy "owners can update workspaces" on public.workspaces
-  for update to authenticated using (owner_id = (select auth.uid())) with check (owner_id = (select auth.uid()));
-
 create policy "members can read workspace membership" on public.workspace_members
   for select to authenticated using (user_id = (select auth.uid()));
 -- Membership writes are intentionally server-side only; do not grant client inserts.
@@ -125,88 +120,15 @@ create policy "members can read audit scans" on public.audit_scans
   for select to authenticated using (exists (
     select 1 from public.workspace_members wm where wm.workspace_id = public.audit_scans.workspace_id and wm.user_id = (select auth.uid())
   ));
-create policy "members can insert audit scans" on public.audit_scans
-  for insert to authenticated with check (created_by = (select auth.uid()) and exists (
-    select 1 from public.workspace_members wm where wm.workspace_id = public.audit_scans.workspace_id and wm.user_id = (select auth.uid())
-  ));
--- Audit scans and findings are append-only: no UPDATE or DELETE policies.
-
 create policy "members can read audit findings" on public.audit_findings
   for select to authenticated using (exists (
     select 1 from public.workspace_members wm where wm.workspace_id = public.audit_findings.workspace_id and wm.user_id = (select auth.uid())
   ));
-create policy "members can insert audit findings" on public.audit_findings
-  for insert to authenticated with check (exists (
-    select 1 from public.workspace_members wm where wm.workspace_id = public.audit_findings.workspace_id and wm.user_id = (select auth.uid())
-  ));
-
 create policy "members can read issues" on public.revenue_leak_issues
   for select to authenticated using (exists (
     select 1 from public.workspace_members wm where wm.workspace_id = public.revenue_leak_issues.workspace_id and wm.user_id = (select auth.uid())
   ));
-create policy "members can create issues" on public.revenue_leak_issues
-  for insert to authenticated with check (created_by = (select auth.uid()) and exists (
-    select 1 from public.workspace_members wm where wm.workspace_id = public.revenue_leak_issues.workspace_id and wm.user_id = (select auth.uid())
-  ));
-create policy "members can update issues" on public.revenue_leak_issues
-  for update to authenticated using (exists (
-    select 1 from public.workspace_members wm where wm.workspace_id = public.revenue_leak_issues.workspace_id and wm.user_id = (select auth.uid())
-  )) with check (exists (
-    select 1 from public.workspace_members wm where wm.workspace_id = public.revenue_leak_issues.workspace_id and wm.user_id = (select auth.uid())
-  ));
-
 create policy "members can read measurements" on public.revenue_leak_measurements
   for select to authenticated using (exists (
     select 1 from public.workspace_members wm where wm.workspace_id = public.revenue_leak_measurements.workspace_id and wm.user_id = (select auth.uid())
   ));
-create policy "members can create measurements" on public.revenue_leak_measurements
-  for insert to authenticated with check (created_by = (select auth.uid()) and exists (
-    select 1 from public.workspace_members wm where wm.workspace_id = public.revenue_leak_measurements.workspace_id and wm.user_id = (select auth.uid())
-  ));
-
--- Keep the API service-role-only RPC narrow and non-public; inserts happen atomically.
-create or replace function public.save_audit_scan(p_scan jsonb, p_findings jsonb)
-returns uuid
-language plpgsql
-security invoker
-set search_path = ''
-as $$
-declare
-  v_scan_id uuid;
-  v_finding jsonb;
-begin
-  insert into public.audit_scans
-    (workspace_id, created_by, url, final_url, strategy, scores, raw_report, lighthouse_version, generated_at)
-  values
-    ((p_scan->>'workspace_id')::uuid, (p_scan->>'created_by')::uuid,
-     p_scan->>'url', p_scan->>'final_url', p_scan->>'strategy',
-     coalesce(p_scan->'scores','[]'::jsonb), p_scan->'raw_report',
-     p_scan->>'lighthouse_version', coalesce((p_scan->>'generated_at')::timestamptz, now()))
-  returning id into v_scan_id;
-
-  for v_finding in select value from jsonb_array_elements(coalesce(p_findings,'[]'::jsonb))
-  loop
-    insert into public.audit_findings
-      (workspace_id, scan_id, finding_key, title, description, category, priority, score,
-       affected_url, evidence, recommendation, raw_finding)
-    values
-      ((p_scan->>'workspace_id')::uuid, v_scan_id, coalesce(v_finding->>'id','unknown'),
-       coalesce(v_finding->>'title','Untitled finding'), v_finding->>'description',
-       coalesce(v_finding->>'category','other'), coalesce(v_finding->>'priority','low'),
-       nullif(v_finding->>'score','')::numeric, v_finding->>'url',
-       coalesce(v_finding->'evidence','{}'::jsonb),
-       coalesce(v_finding->'recommendation','{}'::jsonb), v_finding);
-  end loop;
-  return v_scan_id;
-end;
-$$;
-
-revoke all on function public.save_audit_scan(jsonb, jsonb) from public, anon, authenticated;
-grant execute on function public.save_audit_scan(jsonb, jsonb) to service_role;
-
-grant select on public.workspaces, public.workspace_members, public.audit_scans, public.audit_findings,
-  public.revenue_leak_issues, public.revenue_leak_measurements to authenticated;
-grant insert on public.workspaces, public.audit_scans, public.audit_findings,
-  public.revenue_leak_issues, public.revenue_leak_measurements to authenticated;
-grant update on public.workspaces, public.revenue_leak_issues to authenticated;
-grant all on public.workspaces, public.workspace_members, public.audit_scans, public.audit_findings, public.revenue_leak_issues, public.revenue_leak_measurements to service_role;
