@@ -11,3 +11,32 @@
 .priority-rationale{padding:10px 12px;background:#1a1b25;border-left:2px solid #8c78ff;border-radius:0 7px 7px 0;font-size:12px;line-height:1.6;color:#d1d1dc}.issue-details{margin-top:10px;border:1px solid #30313e;border-radius:8px;padding:10px 12px;color:#c5c5d2;font-size:12px}.issue-details summary{cursor:pointer;font-weight:700}.issue-details ol{padding-left:20px;line-height:1.8}.issue-details a{color:#b8aaff}.issue-details code{overflow-wrap:anywhere}.issue-list .empty{padding:24px 12px;color:#a9aab7}
 @media(max-width:950px){.issue-tools{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:560px){.issue-tools{grid-template-columns:1fr;padding:11px}.issue-title-row{flex-direction:column;gap:6px}.issue-meta span{max-width:100%;overflow-wrap:anywhere}.issue{gap:8px}.issue-priority{white-space:normal}}
+
+
+/* Workspace scuro coerente, leggibile e responsive */
+:root{color-scheme:dark;--bg:#101116;--ink:#f1f1f7;--muted:#a0a1b2;--line:#2b2c38}
+body{background:#101116;color:#f1f1f7}
+.main{background:#101116}
+.topbar{background:rgba(16,17,22,.92);border-color:#292a35;color:#b6b7c6}
+.crumb,.crumb strong{color:#d6d6e0}
+.hero h1,.results-head h2,.panel-title,.method h3{color:#f5f5fb}
+.hero p,.section-head p,.panel-subtitle,.footnote{color:#a3a4b5}
+.hero-side,.panel,.scan-panel,.issues-panel,.summary-panel,.method,.score-card{background:#171821;border-color:#2b2c38;color:#ededf5}
+.field label,.field>label,.scan-panel label{color:#dedee8}
+input,select,textarea{background:#20212c!important;color:#f3f3f8!important;border-color:#393a49!important}
+input::placeholder,textarea::placeholder{color:#898a9b!important}
+.score-card .score-note{color:#a5a6b6}
+.issue{border-color:#2b2c38}
+.issue p{color:#c1c1ce}
+.issue-meta,.priority-rationale{color:#c8c8d5}
+.summary-item{border-color:#2b2c38}
+.summary-item p{color:#b5b6c5}
+.summary-callout{background:#20212c;border-color:#393a49;color:#e0e0eb}
+.method p{color:#bfc0cc}
+.status{border-color:#393a49}
+.status.info{background:#20212c;color:#e1e1ec}
+.status.success{background:#173126;color:#b8efd3}
+.status.error{background:#3b2028;color:#ffd4da}
+.empty{background:#1c1d27;color:#bfc0ce;border-color:#343542}
+.issue-details pre.evidence-json{max-height:320px;overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere;background:#111218;border:1px solid #30313e;border-radius:7px;padding:12px;color:#d0d1df;font:11px/1.55 ui-monospace,SFMono-Regular,Menlo,monospace}
+@media(max-width:760px){.shell{display:block}.sidebar{position:relative;width:100%;height:auto;padding:12px 16px;flex-direction:row;align-items:center;justify-content:space-between}.sidebar nav,.nav-label,.side-bottom{display:none}.main{margin-left:0;padding:0 14px}.topbar{position:relative}.hero{padding:25px 0 18px}.hero-side{width:100%}.results-head{display:flex;flex-direction:column;gap:14px}.actions{display:flex;flex-wrap:wrap;gap:8px}.actions>*{max-width:100%}.report-grid{grid-template-columns:minmax(0,1fr)}}
