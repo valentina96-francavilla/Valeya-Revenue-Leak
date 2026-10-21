@@ -32,6 +32,15 @@
     return null;
   }
   function currentProblem(){return $("rl-manual-issue").value.trim()||(chosenIssue()?.title)||"Problema commerciale da verificare";}
+  function renderSelectedEvidence(){
+    const box=$("rl-selected-evidence"),issue=state.report?.issues?.[state.selectedIssue];
+    if(!box)return;
+    if(!issue){box.hidden=true;box.innerHTML="";return;}
+    const evidence=issue.evidence||{};
+    const urls=[...new Set([state.report.finalUrl||state.report.url,...(evidence.items||[]).map(item=>item?.url||item?.source?.url),...(evidence.nodes||[]).map(item=>item?.url||item?.source?.url)].filter(url=>/^https?:\/\//i.test(url||"")))];
+    box.hidden=false;
+    box.innerHTML='<div class="rl-selected-evidence-head"><strong>Evidenze originali del rilievo</strong><span>ID Lighthouse: '+escapeHTML(issue.id||"non disponibile")+'</span></div><p>'+escapeHTML(issue.description||"Nessuna descrizione disponibile.")+'</p>'+(urls.length?'<p><strong>URL interessati</strong></p><ul>'+urls.map(url=>'<li><a href="'+escapeHTML(url)+'" target="_blank" rel="noopener noreferrer">'+escapeHTML(url)+'</a></li>').join("")+'</ul>':'')+(issue.verificationSteps?.length?'<p><strong>Verifiche suggerite</strong></p><ol>'+issue.verificationSteps.map(step=>'<li>'+escapeHTML(step)+'</li>').join("")+'</ol>':'')+'<details><summary>Mostra tutti i metadati tecnici</summary><pre>'+escapeHTML(JSON.stringify(evidence,null,2))+'</pre></details>';
+  }
   function renderReport(){
     const box=$("rl-audit-source"),report=state.report;if(!report)return;
     box.hidden=false;$("rl-audit-title").textContent="Audit collegato · "+(report.reportId||"report precedente");
@@ -40,11 +49,12 @@
     const issues=report.issues||[];
     $("rl-issue-count").textContent=issues.length+" rilievi importati";
     $("rl-issue-list").innerHTML=issues.length?issues.map((issue,index)=>'<button type="button" class="rl-issue '+(index===state.selectedIssue?"selected":"")+'" data-issue="'+index+'"><span class="rl-issue-radio">'+(index===state.selectedIssue?"✓":"")+'</span><span class="rl-issue-copy"><strong>'+escapeHTML(issue.title)+'</strong><small>'+escapeHTML(issue.description||"Rilievo tecnico da verificare")+'</small><small>'+escapeHTML(issue.categoryLabel||issue.category||"Categoria non specificata")+' · Priorità '+escapeHTML(issue.priority||"da verificare")+' · Confidenza '+escapeHTML(issue.confidenceLabel||"non indicata")+'</small></span></button>').join(""):'<div class="rl-empty">Il report non contiene rilievi. Descrivi un problema commerciale osservato qui sotto.</div>';
+    renderSelectedEvidence();
     $("rl-issue-list").querySelectorAll("[data-issue]").forEach(btn=>btn.addEventListener("click",()=>{
       state.selectedIssue=Number(btn.dataset.issue);$("rl-manual-issue").value="";
       const rec=recommendation(state.report.issues[state.selectedIssue]);
       $("rl-issue-list").querySelectorAll(".rl-issue").forEach(x=>{const active=Number(x.dataset.issue)===state.selectedIssue;x.classList.toggle("selected",active);x.querySelector(".rl-issue-radio").textContent=active?"✓":"";});
-      $("rl-action").value=rec.action;$("rl-source").value=rec.source;$("rl-kpi").value=rec.kpi;if(rec.kpi==="technical"){$("rl-kpi-direction").value="decrease";$("rl-kpi-unit").value="ms";}else if(rec.kpi==="organic")$("rl-kpi-unit").value="clic";
+      $("rl-action").value=rec.action;$("rl-source").value=rec.source;$("rl-kpi").value=rec.kpi;if(rec.kpi==="technical"){$("rl-kpi-direction").value="decrease";$("rl-kpi-unit").value="ms";}else if(rec.kpi==="organic")$("rl-kpi-unit").value="clic";renderSelectedEvidence();
     }));
   }
   function renderMeasurement(){
@@ -198,7 +208,7 @@ if(!state.report&&plan.auditIssue)state.report={product:"Audit Valeya",reportId:
   document.querySelectorAll("[data-back]").forEach(btn=>btn.addEventListener("click",()=>showStep(Number(btn.dataset.back))));
   document.querySelectorAll(".rl-step").forEach(btn=>btn.addEventListener("click",()=>{const target=Number(btn.dataset.step);if(target<=state.step)showStep(target);}));
   $("rl-manual-issue").addEventListener("input",()=>{
-    if($("rl-manual-issue").value.trim()){state.selectedIssue=null;$("rl-issue-list").querySelectorAll(".rl-issue").forEach(x=>{x.classList.remove("selected");x.querySelector(".rl-issue-radio").textContent="";});}
+    if($("rl-manual-issue").value.trim()){state.selectedIssue=null;$("rl-issue-list").querySelectorAll(".rl-issue").forEach(x=>{x.classList.remove("selected");x.querySelector(".rl-issue-radio").textContent="";});renderSelectedEvidence();}
   });
   ["rl-before","rl-after","rl-target","rl-before-period","rl-after-period","rl-before-start","rl-before-end","rl-after-start","rl-after-end","rl-kpi-unit"].forEach(id=>$(id).addEventListener("input",updateResult));
   ["rl-before-start","rl-before-end","rl-after-start","rl-after-end"].forEach(id=>$(id).addEventListener("change",updateResult));
