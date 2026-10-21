@@ -103,7 +103,7 @@ async function dashboard(workspaceId) {
   ]);
   const now = new Date().toISOString().slice(0,10);
   const measuredIssues = new Set((measurements || []).map(m => m.issue_id));
-  const criticalOpen = (issues || []).filter(i => i.severity === "high" && ["open","planned"].includes(i.state));
+  const criticalOpen = (issues || []).filter(i => i.severity === "high" && i.state === "open");
   const due = (issues || []).filter(i => i.review_date && i.review_date <= now && !["verified","archived"].includes(i.state));
   const awaiting = (issues || []).filter(i => ["completed","awaiting_measurement"].includes(i.state) && !measuredIssues.has(i.id));
   return { counts: { criticalOpen: criticalOpen.length, dueReviews: due.length, awaitingMeasurement: awaiting.length, totalIssues: (issues || []).length, totalScans: (scans || []).length }, criticalOpen, dueReviews: due, awaitingMeasurement: awaiting, recentScans: scans || [] };
