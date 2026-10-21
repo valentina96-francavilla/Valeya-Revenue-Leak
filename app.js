@@ -51,7 +51,7 @@
   function renderMeasurement(){
     const problem=currentProblem(),kpi=kpiLabels[$("rl-kpi").value]||"Metrica da definire";
     $("rl-selected-problem").innerHTML='<span class="rl-kicker">PROBLEMA SCELTO</span><strong>'+escapeHTML(problem)+'</strong><p>Obiettivo: '+escapeHTML(goalLabels[$("rl-goal").value]||"Migliorare il risultato commerciale")+'</p>';
-    $("rl-measure-summary").innerHTML='<div><span>Problema</span><strong>'+escapeHTML(problem)+'</strong></div><div><span>Metrica da misurare</span><strong>'+escapeHTML(kpi)+'</strong></div><div><span>Fonte dati</span><strong>'+escapeHTML($("rl-source").selectedOptions[0]?.textContent||"Da definire")+'</strong></div><div><span>Obiettivo</span><strong>'+$("rl-target").value.trim()?escapeHTML($("rl-target").value):"Non definito"+'</strong></div>';
+    $("rl-measure-summary").innerHTML='<div><span>Problema</span><strong>'+escapeHTML(problem)+'</strong></div><div><span>Metrica da misurare</span><strong>'+escapeHTML(kpi)+'</strong></div><div><span>Fonte dati</span><strong>'+escapeHTML($("rl-source").selectedOptions[0]?.textContent||"Da definire")+'</strong></div><div><span>Obiettivo</span><strong>'+($("rl-target").value.trim()?escapeHTML($("rl-target").value):"Non definito")+'</strong></div>';
     $("rl-before-help").textContent="Valore di "+kpi.toLocaleLowerCase("it")+" nel periodo iniziale.";
     $("rl-after-help").textContent="Valore osservato della stessa metrica nel periodo successivo.";
     updateResult();
