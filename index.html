@@ -17,7 +17,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./audit.css?v=0.3">
+  <link rel="stylesheet" href="./audit.css?v=1>
 </head>
 <body>
   <div class="shell">
@@ -27,7 +27,8 @@
       <nav aria-label="Navigazione principale">
         <a class="nav active" href="#audit"><span class="ico">⌕</span><span>Audit del sito</span></a>
         <a class="nav" href="#report"><span class="ico">▤</span><span>Risultati e priorità</span></a>
-        <a class="nav" href="revenue-leak.html"><span class="ico">↗</span><span>Impatto commerciale</span></a>
+        <a class="nav" href="dashboard.html"><span class="ico">▦</span><span>Cosa fare adesso</span></a>
+        <a class="nav" href="revenue-leak.html"><span class="ico">↗</span><span>Revenue Leak</span></a>
       </nav>
       <div class="side-bottom">
         <div class="side-note"><strong>Meno supposizioni.<br>Priorità più chiare.</strong><p>Individua i controlli da approfondire e organizza il prossimo intervento.</p></div>
@@ -79,8 +80,9 @@
           </div>-->
         </form>
         <div id="status" class="status" role="status" aria-live="polite"></div>
-        <div id="loading" class="loading-line" aria-hidden="true"><span></span></div>
+        <div id="loading" class="loading-line" role="status" aria-live="polite"><span class="sr-only">Analisi Lighthouse in corso. Può richiedere fino a un minuto.</span><span class="loading-progress" aria-hidden="true"></span></div>
       </section>
+      <section class="panel history-panel" id="scanHistory" aria-labelledby="historyTitle"><div class="section-head"><div><h2 id="historyTitle">Scansioni recenti</h2><p>Report salvati nel workspace, recuperabili anche da un altro dispositivo.</p></div></div><div id="scanHistoryList" class="scan-history-list"><div class="empty">Accedi al workspace per consultare lo storico.</div></div></section>
       <section id="results" class="results" aria-live="polite">
         <div class="results-head" id="report">
           <div><div class="eyebrow">02 / RISULTATI</div><h2>Risultati dell'audit SEO e tecnico</h2><p id="reportUrl"></p><p id="reportDate"></p></div>
@@ -116,6 +118,7 @@
     </main>
   </div>
   <div id="toast" class="toast" role="status"></div>
-  <script src="./audit.js?v=0.3" defer></script>
+  <script src="./intelligence-client.js?v=1" defer></script>
+  <script src="./audit.js?v=1" defer></script>
 </body>
 </html>

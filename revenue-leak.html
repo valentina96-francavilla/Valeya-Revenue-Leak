@@ -13,6 +13,7 @@
 <p class="nav-label">WORKSPACE</p>
 <nav aria-label="Navigazione principale">
 <a class="nav" href="https://audit.valeyastudio.it/#audit"><span class="nav-icon">⌕</span><span>Valeya Audit</span></a>
+<a class="nav" href="dashboard.html"><span class="nav-icon">▦</span><span>Cosa fare adesso</span></a>
 <a class="nav active" href="#workspace"><span class="nav-icon">◫</span><span>Revenue Leak</span></a>
 </nav>
 <div class="sidebar-bottom"><div class="side-card"><h3>Dal problema<br>alla decisione.</h3><p>Una priorità alla volta. Dati reali, ipotesi dichiarate, risultati verificabili.</p></div><div class="account"><div class="avatar">V</div><div><strong>Valeya Studio</strong><small>Prototype · v0.2</small></div></div></div>
@@ -40,6 +41,7 @@
 </div>
 <div class="rl-subhead"><h3>Problemi individuati</h3><span id="rl-issue-count" class="rl-count">0 rilievi importati</span></div>
 <div id="rl-issue-list" class="rl-issue-list"><div class="rl-empty">Non è stato trasferito alcun report. Puoi descrivere manualmente il problema qui sotto.</div></div>
+<div id="rl-selected-evidence" class="rl-selected-evidence" hidden></div>
 <label class="rl-field rl-manual-field">Oppure descrivi il problema osservato<textarea id="rl-manual-issue" rows="3" placeholder="Es. molte visite al sito, ma poche richieste di preventivo."></textarea></label>
 <div class="rl-note"><strong>Da ricordare</strong><span>Una criticità tecnica è un indizio da verificare, non la prova che stia facendo perdere clienti o fatturato.</span></div>
 <div class="rl-actions"><span class="rl-muted">Scegli un solo problema prioritario per iniziare.</span><button type="button" class="rl-primary" id="rl-to-plan">Definisci l'intervento <span>→</span></button></div>
@@ -90,12 +92,13 @@
 <label class="rl-field">Note sul risultato<textarea id="rl-notes" rows="3" placeholder="Es. nello stesso periodo è partita una campagna pubblicitaria."></textarea></label>
 <div class="rl-note rl-note-warning"><strong>Attenzione all'interpretazione</strong><span>Una variazione prima/dopo non dimostra da sola che l'intervento l'abbia causata. Considera stagionalità, campagne, volume di traffico e altri fattori.</span></div>
 <div class="rl-actions"><button type="button" class="rl-secondary" data-back="3">← Torna all’intervento</button><div class="rl-action-right"><button type="button" class="rl-secondary" id="rl-export">Esporta scheda</button><button type="button" class="rl-primary" id="rl-save">Salva scheda <span>✓</span></button></div></div>
-<div id="rl-saved" class="rl-saved" hidden role="status">Scheda salvata in questo browser. È disponibile nell’elenco delle schede salvate.</div>
+<div id="rl-saved" class="rl-saved" hidden role="status">Scheda salvata nel workspace e sincronizzata con il database.</div>
 </section>
 </div>
-<section class="rl-panel rl-saved-plans" id="rl-saved-plans-panel"><div class="rl-panel-head"><div><span class="rl-kicker">ARCHIVIO LOCALE</span><h2>Schede salvate</h2><p>Riapri una scheda per ritrovare problema, metrica, valori e intervento. L’archivio è disponibile in questo browser e non è sincronizzato tra dispositivi.</p></div><button type="button" class="rl-secondary" id="rl-refresh-plans">Aggiorna elenco</button></div><div id="rl-saved-plans-list" class="rl-saved-plans-list"><div class="rl-empty">Nessuna scheda salvata.</div></div></section>
+<section class="rl-panel rl-saved-plans" id="rl-saved-plans-panel"><div class="rl-panel-head"><div><span class="rl-kicker">WORKSPACE</span><h2>Schede operative</h2><p>Riapri una scheda per ritrovare problema, decisione, intervento e misurazioni. I dati sono associati al tuo workspace.</p></div><button type="button" class="rl-secondary" id="rl-refresh-plans">Aggiorna elenco</button></div><div id="rl-saved-plans-list" class="rl-saved-plans-list"><div class="rl-empty">Nessuna scheda salvata.</div></div></section>
 <section class="rl-bottom-info"><div><span class="rl-kicker">COME FUNZIONA</span><h2>Quattro fasi. Un problema alla volta.</h2></div><div class="rl-mini-step"><b>01</b><div><strong>Diagnosi</strong><p>Individua un problema reale e chiarisci cosa sai e cosa devi verificare.</p></div></div><div class="rl-mini-step"><b>02</b><div><strong>Decisione</strong><p>Definisci l'intervento, la fonte dati e un KPI coerente.</p></div></div><div class="rl-mini-step"><b>03</b><div><strong>Intervento</strong><p>Registra responsabile, stato, date e modifiche effettivamente realizzate.</p></div></div><div class="rl-mini-step"><b>04</b><div><strong>Misurazione</strong><p>Confronta i dati e conserva ogni verifica senza attribuire automaticamente la variazione all'intervento.</p></div></div></section>
 <footer class="pagefoot"><strong><span class="mark">v.</span> VALEYA</strong><span>Revenue Leak · Workspace operativo</span><span>Ipotesi trasparenti. Risultati verificabili.</span></footer>
 </main>
-<script src="./app.js?v=0.4" defer></script>
+<script src="./intelligence-client.js?v=1" defer></script>
+<script src="./app.js?v=1" defer></script>
 </body></html>

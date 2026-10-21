@@ -54,10 +54,10 @@
   }
   function structuredEvidence(audit){
     const d=audit.details||{};
-    const evidence={type:d.type||null};
+    const evidence={type:d.type||null,rawDetails:d};
     ["overallSavingsMs","overallSavingsBytes","overallSavingsWastedMs","overallSavingsWastedBytes","scale","summary","source","url","metricSavings","debugData","headings"].forEach(k=>{if(d[k]!==undefined)evidence[k]=d[k];});
-    if(Array.isArray(d.items)){evidence.itemCount=d.items.length;evidence.items=d.items.slice(0,40);}
-    if(Array.isArray(d.nodes)){evidence.nodeCount=d.nodes.length;evidence.nodes=d.nodes.slice(0,25);}
+    if(Array.isArray(d.items)){evidence.itemCount=d.items.length;evidence.items=d.items;}
+    if(Array.isArray(d.nodes)){evidence.nodeCount=d.nodes.length;evidence.nodes=d.nodes;}
     if(Array.isArray(d.sortedBy))evidence.sortedBy=d.sortedBy;
     if(d.type==="opportunity"||d.type==="table"||d.type==="list"||d.type==="criticalrequestchain")evidence.detailType=d.type;
     return evidence;
@@ -110,8 +110,17 @@
   }
   function renderScores(data){
     const cats=data.lighthouseResult.categories||{};
-    $("scoreCards").innerHTML=categories.map(c=>{const score=cats[c.key]?.score,state=Number.isFinite(score)?scoreState(score):"mid",value=Number.isFinite(score)?Math.round(score*100):"N/D",width=Number.isFinite(score)?Math.max(0,Math.min(100,score*100)):0,note=Number.isFinite(score)?(score>=.9?"Buono":score>=.5?"Da migliorare":"Critico"):"Dato non disponibile";
-      return '<article class="panel score-card score-'+state+'"><div class="score-top"><span>'+c.label+'</span><span class="score-dot"></span></div><div class="score-number">'+value+(Number.isFinite(score)?'<span style="font-size:14px;letter-spacing:0">/100</span>':'')+'</div><div class="score-track"><span style="width:'+width+'%"></span></div><div class="score-note">'+note+' · '+c.note+'</div></article>';
+    const businessNotes={
+      performance:score=>score<.5?"Criticità marcata: il caricamento può aumentare il rischio di abbandono, soprattutto su mobile.":score<.9?"Margini di miglioramento: verifica i tempi di caricamento e la stabilità.":"Buona base nel test: controlla comunque l'esperienza reale degli utenti.",
+      accessibility:score=>score<.5?"Possibili ostacoli importanti: alcune persone potrebbero avere difficoltà a usare la pagina.":score<.9?"Possibili barriere: verifica manualmente i componenti segnalati.":"Buon risultato automatico, non equivale a una verifica completa di accessibilità.",
+      "best-practices":score=>score<.5?"Criticità tecniche da verificare: possono incidere su affidabilità o sicurezza di base.":score<.9?"Alcuni controlli tecnici richiedono attenzione.":"Buon risultato nei controlli automatici eseguiti.",
+      seo:score=>score<.5?"Possibili problemi SEO tecnici: verifica indicizzazione e metadati della pagina.":score<.9?"Margini SEO tecnici da controllare, senza dedurre effetti sul traffico dal solo punteggio.":"Buona base nei controlli SEO automatici eseguiti."
+    };
+    $("scoreCards").innerHTML=categories.map(c=>{
+      const score=cats[c.key]?.score,state=Number.isFinite(score)?scoreState(score):"mid",value=Number.isFinite(score)?Math.round(score*100):"N/D",width=Number.isFinite(score)?Math.max(0,Math.min(100,score*100)):0;
+      const note=Number.isFinite(score)?(score>=.9?"Buono":score>=.5?"Da migliorare":"Critico"):"Dato non disponibile";
+      const business=Number.isFinite(score)?(businessNotes[c.key]||(()=> "Valutazione tecnica da approfondire."))(score):"Non ci sono dati sufficienti per interpretare quest'area.";
+      return '<article class="panel score-card score-'+state+'"><div class="score-top"><span>'+c.label+'</span><span class="score-dot"></span></div><div class="score-number">'+value+(Number.isFinite(score)?'<span style="font-size:14px;letter-spacing:0">/100</span>':'')+'</div><div class="score-track"><span style="width:'+width+'%"></span></div><div class="score-note">'+note+' · '+c.note+'</div><p class="score-business-note">'+safe(business)+'</p></article>';
     }).join("");
   }
   function filteredIssues(){
@@ -132,22 +141,25 @@
       const desc=String(i.description).replace(/\s*\[Learn more\]\([^)]*\)/gi,"").replace(/\s*\[.*?\]\([^)]*\)/g,"");
       const evidence=i.evidence||{};
       const evidenceSummary=[evidence.overallSavingsMs?("Risparmio stimato: "+Math.round(evidence.overallSavingsMs)+" ms"):"",evidence.overallSavingsBytes?("Byte potenzialmente risparmiabili: "+Math.round(evidence.overallSavingsBytes)):"",i.displayValue].filter(Boolean).join(" · ");
-      return '<article class="issue '+i.priority+'" data-category="'+safe(i.category)+'"><div class="issue-icon">'+(i.priority==="high"?"!":i.priority==="medium"?"↗":"i")+'</div><div class="issue-body"><div class="issue-title-row"><strong>'+safe(i.title)+'</strong><span class="issue-priority priority-'+i.priority+'">Priorità '+priorityLabels[i.priority].toLowerCase()+'</span></div><p>'+safe(desc)+'</p><div class="issue-meta"><span>'+safe(i.categoryLabel)+'</span><span>Confidenza '+safe(i.confidenceLabel.toLowerCase())+'</span><span>Sforzo '+safe(i.effortLabel.toLowerCase())+'</span>'+ (evidenceSummary?'<span>'+safe(evidenceSummary)+'</span>':'')+'</div><p class="priority-rationale"><strong>Perché questa priorità:</strong> '+safe(i.priorityRationale)+'</p><details class="issue-details"><summary>Dettagli ed evidenze</summary><p><strong>Come verificarlo</strong></p><ol>'+i.verificationSteps.map(s=>'<li>'+safe(s)+'</li>').join("")+'</ol>'+(evidenceSummary?'<p>'+safe(evidenceSummary)+'</p>':'')+((evidence.items?.length||evidence.nodes?.length)?'<p><strong>Evidenze strutturate restituite da Lighthouse</strong></p><pre class="evidence-json">'+safe(JSON.stringify({type:evidence.type,itemCount:evidence.itemCount,items:(evidence.items||[]).slice(0,5),nodeCount:evidence.nodeCount,nodes:(evidence.nodes||[]).slice(0,3),summary:evidence.summary,source:evidence.source},null,2).slice(0,4500))+'</pre>':'')+'<p><strong>ID Lighthouse:</strong> <code>'+safe(i.id)+'</code></p><p><a href="'+safe(i.helpUrl)+'" target="_blank" rel="noopener noreferrer">Documentazione Lighthouse ↗</a></p></details></div></article>';
+      const affectedUrls=[...new Set([...(evidence.items||[]),...(evidence.nodes||[])].map(item=>item?.url||item?.source?.url||item?.node?.url).filter(url=>/^https?:\/\//i.test(url||"")))];
+      return '<article class="issue '+i.priority+'" data-category="'+safe(i.category)+'"><div class="issue-icon">'+(i.priority==="high"?"!":i.priority==="medium"?"↗":"i")+'</div><div class="issue-body"><div class="issue-title-row"><strong>'+safe(i.title)+'</strong><span class="issue-priority priority-'+i.priority+'">Priorità '+priorityLabels[i.priority].toLowerCase()+'</span></div><p>'+safe(desc)+'</p><div class="issue-meta"><span>'+safe(i.categoryLabel)+'</span><span>Confidenza '+safe(i.confidenceLabel.toLowerCase())+'</span><span>Sforzo '+safe(i.effortLabel.toLowerCase())+'</span>'+(evidenceSummary?'<span>'+safe(evidenceSummary)+'</span>':'')+'</div><p class="priority-rationale"><strong>Perché questa priorità:</strong> '+safe(i.priorityRationale)+'</p><details class="issue-details"><summary>Dettagli ed evidenze</summary><p><strong>Come verificarlo</strong></p><ol>'+i.verificationSteps.map(s=>'<li>'+safe(s)+'</li>').join("")+'</ol>'+(evidenceSummary?'<p>'+safe(evidenceSummary)+'</p>':'')+(affectedUrls.length?'<p><strong>URL degli elementi interessati</strong></p><ul>'+affectedUrls.map(url=>'<li><a href="'+safe(url)+'" target="_blank" rel="noopener noreferrer">'+safe(url)+'</a></li>').join("")+'</ul>':'')+((evidence.items?.length||evidence.nodes?.length)?'<p><strong>Evidenze strutturate originali di Lighthouse</strong></p><pre class="evidence-json">'+safe(JSON.stringify(evidence,null,2))+'</pre>':'')+'<p><strong>ID Lighthouse:</strong> <code>'+safe(i.id)+'</code></p><p><a href="'+safe(i.helpUrl)+'" target="_blank" rel="noopener noreferrer">Documentazione Lighthouse ↗</a></p></details>'+(i.priority==="high"?'<button type="button" class="transform-issue" data-transform-issue="'+safe(i.id)+'" disabled title="Salva prima la scansione nel workspace">Trasforma in intervento ↗</button>':'')+'</div></article>';
     }).join("");
   }
   function renderSummary(data,issues){
     const cats=data.lighthouseResult.categories||{},scored=categories.map(c=>({...c,score:cats[c.key]?.score})).filter(c=>Number.isFinite(c.score)),weakest=[...scored].sort((a,b)=>a.score-b.score)[0],high=issues.filter(i=>i.priority==="high").length,medium=issues.filter(i=>i.priority==="medium").length,strategy=data.lighthouseResult.configSettings?.formFactor||"mobile",date=data.analysisUTCTimestamp?new Date(data.analysisUTCTimestamp):new Date();
     $("reportSummary").innerHTML='<div class="summary-item"><span class="summary-n">01</span><div><strong>Parti dall’area più debole</strong><p>'+(weakest?safe(weakest.label)+" ha il punteggio più basso ("+Math.round(weakest.score*100)+"/100). Analizza prima i controlli associati.":"I punteggi di categoria non sono disponibili.")+'</p></div></div><div class="summary-item"><span class="summary-n">02</span><div><strong>Valuta le priorità motivate</strong><p>'+high+' priorità alte e '+medium+' medie. La classificazione è indicativa: verifica ogni rilievo prima di pianificare.</p></div></div><div class="summary-item"><span class="summary-n">03</span><div><strong>Conferma sul sito reale</strong><p>I test automatici non dimostrano da soli l’impatto su vendite, conversioni o posizionamento.</p></div></div><div class="summary-callout"><strong>Perimetro del report</strong>Analisi '+(strategy==="desktop"?"desktop":"mobile")+' · '+safe(date.toLocaleString("it-IT"))+'. È stata esaminata la singola pagina indicata, non l’intero sito.</div>';
   }
-  function persistReport(report){
-    const key="valeyaAuditReport:"+report.reportId;
-    try{
-      localStorage.setItem(key,JSON.stringify(report));
-      localStorage.setItem("valeyaAuditLatestReportId",report.reportId);
-      const ids=JSON.parse(localStorage.getItem("valeyaAuditReportIds")||"[]").filter(id=>id!==report.reportId);
-      ids.unshift(report.reportId);localStorage.setItem("valeyaAuditReportIds",JSON.stringify(ids.slice(0,20)));
-    }catch{}
-    try{sessionStorage.setItem("valeyaAuditReport",JSON.stringify(report));}catch{}
+  async function persistReport(report){
+    if(!window.ValeyaIntelligence)throw new Error("Il client del workspace non è caricato.");
+    if(!window.ValeyaIntelligence.getSession()?.access_token)throw new Error("Accedi al workspace per salvare la scansione. Il report resta visibile finché questa pagina è aperta.");
+    if(report.scanId)return report.scanId;
+    const saved=await window.ValeyaIntelligence.call("saveScan",{body:{report}});
+    report.scanId=saved.scanId;report.workspaceId=saved.workspaceId;
+    $("revenueLeakLink").href="revenue-leak.html?scan="+encodeURIComponent(report.scanId);
+    document.querySelectorAll("[data-transform-issue]").forEach(button=>{button.disabled=false;button.title="Crea una scheda operativa in Revenue Leak";});
+    setStatus("Scansione salvata nel workspace. Puoi riaprire il report da altri dispositivi e trasformare i rilievi critici in interventi.","success");
+    renderScanHistory();
+    return report.scanId;
   }
   function renderReport(data,target,strategy){
     const lh=data.lighthouseResult;
@@ -156,31 +168,46 @@
     $("reportUrl").textContent=lh.finalUrl||target;
     $("reportDate").textContent="Analisi "+new Date(data.analysisUTCTimestamp||Date.now()).toLocaleString("it-IT")+" · "+(strategy==="mobile"?"Mobile":"Desktop");
     results.classList.add("show");
-    lastReport={schemaVersion:"1.0",product:"Audit Valeya",reportId:makeId(),generatedAt:new Date().toISOString(),analysisTimestamp:data.analysisUTCTimestamp||null,url:target,finalUrl:lh.finalUrl||target,strategy,scores:categories.map(c=>({category:c.label,key:c.key,score:Number.isFinite(lh.categories?.[c.key]?.score)?Math.round(lh.categories[c.key].score*100):null})),issues:allIssues,lighthouseVersion:lh.lighthouseVersion||null,fetchTime:lh.fetchTime||null,environment:{formFactor:lh.configSettings?.formFactor||strategy,requestedUrl:lh.requestedUrl||target,finalUrl:lh.finalUrl||target},note:"Risultati automatici per una singola pagina. Priorità, confidenza e sforzo sono indicazioni euristiche, non stime di perdita economica."};
-    persistReport(lastReport);
-    $("revenueLeakLink").href="revenue-leak.html?report="+encodeURIComponent(lastReport.reportId);
+    lastReport={schemaVersion:"1.0",product:"Audit Valeya",reportId:makeId(),generatedAt:new Date().toISOString(),analysisTimestamp:data.analysisUTCTimestamp||null,url:target,finalUrl:lh.finalUrl||target,strategy,lighthouseResult:lh,scores:categories.map(c=>({category:c.label,key:c.key,score:Number.isFinite(lh.categories?.[c.key]?.score)?Math.round(lh.categories[c.key].score*100):null})),issues:allIssues,lighthouseVersion:lh.lighthouseVersion||null,fetchTime:lh.fetchTime||null,environment:{formFactor:lh.configSettings?.formFactor||strategy,requestedUrl:lh.requestedUrl||target,finalUrl:lh.finalUrl||target},note:"Risultati automatici per una singola pagina. Priorità, confidenza e sforzo sono indicazioni euristiche, non stime di perdita economica."};
+    $("revenueLeakLink").href="revenue-leak.html";
+    persistReport(lastReport).catch(error=>{setStatus(error.message,"info");});
     results.scrollIntoView({behavior:"smooth",block:"start"});
   }
-  function restoreLatestReport(){
+  async function renderScanHistory(){
+    const box=$("scanHistoryList");if(!box)return;
+    if(!window.ValeyaIntelligence?.getSession()?.access_token){box.innerHTML='<div class="empty">Accedi al workspace per consultare lo storico persistente.</div>';return;}
     try{
-      const id=localStorage.getItem("valeyaAuditLatestReportId");
-      const raw=id&&localStorage.getItem("valeyaAuditReport:"+id);
-      if(raw){lastReport=JSON.parse(raw);allIssues=lastReport.issues||[];renderStoredReport(lastReport);}
-    }catch{}
+      const result=await window.ValeyaIntelligence.call("listScans",{method:"GET"});
+      const scans=result.scans||[];
+      if(!scans.length){box.innerHTML='<div class="empty">Nessuna scansione salvata. Avvia un audit dopo aver effettuato l\'accesso.</div>';return;}
+      box.innerHTML=scans.slice(0,10).map(scan=>'<article class="scan-history-item"><div><strong>'+safe(scan.url||"URL non disponibile")+'</strong><small>'+safe(scan.strategy==="mobile"?"Mobile":"Desktop")+' · '+safe(new Date(scan.generated_at||scan.created_at).toLocaleString("it-IT"))+'</small></div><a href="index.html?scan='+encodeURIComponent(scan.id)+'#report">Apri report ↗</a></article>').join("");
+    }catch(error){box.innerHTML='<div class="empty">'+safe(error.message)+'</div>';}
+  }
+  async function restoreLatestReport(){
+    if(!window.ValeyaIntelligence?.getSession()?.access_token)return;
+    try{
+      const params=new URLSearchParams(location.search),requested=params.get("scan");
+      let result;
+      if(requested)result=await window.ValeyaIntelligence.call("getScan",{method:"GET",query:{id:requested}});
+      else{
+        const list=await window.ValeyaIntelligence.call("listScans",{method:"GET"});
+        if(list.scans?.[0])result=await window.ValeyaIntelligence.call("getScan",{method:"GET",query:{id:list.scans[0].id}});
+      }
+      if(result?.report){lastReport={...result.report,scanId:result.scanId,workspaceId:result.workspaceId};allIssues=lastReport.issues||[];renderStoredReport(lastReport);}
+    }catch(error){if(new URLSearchParams(location.search).has("scan"))setStatus(error.message,"error");}
   }
   function renderStoredReport(report){
     if(!report||!Array.isArray(report.issues))return;
-    const scoreCards=$("scoreCards");
-    scoreCards.innerHTML=(report.scores||[]).map(s=>'<article class="panel score-card score-'+scoreState((s.score??0)/100)+'"><div class="score-top"><span>'+safe(s.category)+'</span><span class="score-dot"></span></div><div class="score-number">'+(s.score??"N/D")+(s.score!==null?'<span style="font-size:14px">/100</span>':"")+'</div><div class="score-track"><span style="width:'+Math.max(0,Math.min(100,s.score||0))+'%"></span></div></article>').join("");
+    lastReport=report;allIssues=report.issues||[];
+    renderScores({lighthouseResult:{categories:Object.fromEntries((report.scores||[]).map(score=>[score.key,{score:score.score===null?null:score.score/100}]))}});
     $("reportUrl").textContent=report.finalUrl||report.url;
     $("reportDate").textContent="Report recuperato · "+new Date(report.generatedAt).toLocaleString("it-IT")+" · "+(report.strategy==="mobile"?"Mobile":"Desktop");
     $("reportSummary").innerHTML='<div class="summary-item"><span class="summary-n">01</span><div><strong>Report recuperato</strong><p>Puoi riaprire i rilievi salvati e trasferirli a Revenue Leak.</p></div></div>';
-    renderIssueList();results.classList.add("show");$("revenueLeakLink").href="revenue-leak.html?report="+encodeURIComponent(report.reportId);
+    renderIssueList();document.querySelectorAll("[data-transform-issue]").forEach(button=>{button.disabled=!report.scanId;button.title=report.scanId?"Crea una scheda operativa in Revenue Leak":"Salva la scansione nel workspace per abilitare il trasferimento";});results.classList.add("show");$("revenueLeakLink").href=report.scanId?"revenue-leak.html?scan="+encodeURIComponent(report.scanId):"revenue-leak.html";
   }
   form.addEventListener("submit",async event=>{
     event.preventDefault();let target;
     try{target=normalizeUrl(urlInput.value);}catch(error){setStatus(error.message,"error");return;}
-    try{sessionStorage.removeItem("valeyaAuditReport");}catch{}
     const strategy=strategyInput.value;runButton.disabled=true;runButton.textContent="Analisi in corso…";loading.classList.add("show");results.classList.remove("show");
     setStatus("Analisi Lighthouse in corso. Può richiedere fino a un minuto.","info");
     try{const data=await runPageSpeed(target,strategy);renderReport(data,target,strategy);setStatus("Analisi completata. I rilievi includono priorità motivate, evidenze disponibili e istruzioni di verifica.","success");}
@@ -194,5 +221,24 @@
     link.href=url;link.download="audit-valeya-"+new URL(lastReport.url).hostname.replace(/[^a-z0-9.-]/gi,"-")+".json";document.body.appendChild(link);link.click();link.remove();URL.revokeObjectURL(url);
   });
   printButton.addEventListener("click",()=>window.print());
+  $("issueList").addEventListener("click",async event=>{
+    const button=event.target.closest("[data-transform-issue]");if(!button)return;
+    const issue=allIssues.find(item=>item.id===button.dataset.transformIssue);if(!issue)return;
+    if(!window.ValeyaIntelligence?.getSession()?.access_token){setStatus("Accedi al workspace prima di trasformare il rilievo in intervento.","info");return;}
+    if(!lastReport?.scanId){setStatus("La scansione non è ancora stata salvata. Attendi il salvataggio o ripeti l'analisi dopo aver effettuato l'accesso.","info");return;}
+    button.disabled=true;button.textContent="Creazione…";
+    try{
+      const result=await window.ValeyaIntelligence.call("createIssue",{body:{issue:{source_scan_id:lastReport.scanId,source_finding_key:issue.id,title:issue.title,description:issue.description,url:lastReport.finalUrl||lastReport.url,category:issue.category,severity:issue.priority,evidence:issue.evidence||{},decision:{suggestedAction:issue.verificationSteps||[],priorityRationale:issue.priorityRationale||""}}}});
+      location.href="revenue-leak.html?issue="+encodeURIComponent(result.issue.id);
+    }catch(error){button.disabled=false;button.textContent="Riprova trasformazione ↗";setStatus(error.message,"error");}
+  });
+  window.addEventListener("valeya-intelligence-auth",()=>{
+    if(window.ValeyaIntelligence?.getSession()?.access_token){
+      if(lastReport&&!lastReport.scanId)persistReport(lastReport).catch(error=>setStatus(error.message,"error"));
+      else if(!lastReport)restoreLatestReport();
+    }
+  });
+  window.addEventListener("valeya-intelligence-ready",()=>{renderScanHistory();if(window.ValeyaIntelligence?.getSession()?.access_token)restoreLatestReport();});
+  renderScanHistory();
   restoreLatestReport();
 })();
