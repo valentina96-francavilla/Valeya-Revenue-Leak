@@ -63,3 +63,28 @@
 .formula-note p strong{color:#363440}
 
 .metric small[id="revenueExplain"]{line-height:1.6;display:block;min-height:28px}.result small{display:block;max-width:330px;line-height:1.55}
+
+
+/* Audit findings → actionable, measurable follow-up */
+.audit-action-plan{margin-top:18px;padding-top:17px;border-top:1px solid #eeeef3}
+.audit-action-plan-head{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;margin-bottom:13px}
+.audit-action-plan-head small{font-size:9px;letter-spacing:1.2px;font-weight:800;color:#6e57df}
+.audit-action-plan-head h3{font:700 16px var(--display);margin:6px 0}
+.audit-action-plan-head p{font-size:10px;line-height:1.6;color:#858692;margin:0;max-width:620px}
+.action-plan-tag{flex-shrink:0;font-size:8px;font-weight:800;letter-spacing:.3px;padding:6px 8px;border-radius:6px;background:#fff6e8;color:#985b08}
+.audit-action-plan-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.audit-action-card{min-width:0;border:1px solid #eceaf3;background:#fff;border-radius:9px;padding:13px}
+.audit-action-card-top{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px}
+.audit-action-number{font:800 11px var(--display);color:#7963e8}
+.audit-action-priority{font-size:8px;font-weight:800;padding:4px 6px;border-radius:5px;background:#f3f2f7;color:#777985}
+.audit-action-priority.high{background:#fff0f1;color:#b72f3d}
+.audit-action-priority.medium{background:#fff6e8;color:#985b08}
+.audit-action-card h4{font:700 12px/1.5 var(--display);margin:0 0 7px;color:#292735}
+.audit-action-evidence{font-size:9px;line-height:1.6;color:#777985;margin:0 0 10px}
+.audit-action-field{padding-top:9px;margin-top:8px;border-top:1px solid #f0eff5}
+.audit-action-field strong,.audit-action-check strong{font-size:9px;color:#373544}
+.audit-action-field p,.audit-action-check p{font-size:9px;line-height:1.6;color:#777985;margin:4px 0 0}
+.audit-action-check{margin-top:10px;padding:9px;background:#f8f7fc;border-radius:6px}
+.audit-action-status{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:11px;font-size:9px;font-weight:700;color:#656575}
+.audit-action-status select{max-width:58%;font:500 9px var(--font);padding:7px 8px;border:1px solid #e4e2ec;border-radius:6px;background:#fff;color:#474653}
+@media(max-width:680px){.audit-action-plan-head{flex-direction:column}.audit-action-plan-list{grid-template-columns:1fr}.audit-action-status{align-items:flex-start;flex-direction:column}.audit-action-status select{max-width:100%;width:100%}}
