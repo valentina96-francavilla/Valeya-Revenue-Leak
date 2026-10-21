@@ -75,7 +75,23 @@
     const change=(diff>0?"+":"")+fmt(diff)+" "+unit+(pct===null?" (variazione percentuale non calcolabile)":" ("+(pct>0?"+":"")+fmt(pct)+"%)");
     const target=$("rl-target").value.trim();let goal="";
     if(target!==""&&Number.isFinite(Number(target))){const t=Number(target),reached=direction==="increase"?a>=t:a<=t;goal=" Obiettivo "+fmt(t)+" "+unit+": "+(reached?"raggiunto":"non ancora raggiunto")+".";}
-    box.innerHTML='<span class="rl-result-icon">'+(better===true?"↗":better===false?"↘":"=")+'</span><div><strong>'+headline+': '+escapeHTML(change)+'</strong><p>Confronto descrittivo fra '+escapeHTML($("rl-before-period").value||"periodo iniziale non specificato")+' e '+escapeHTML($("rl-after-period").value||"periodo successivo non specificato")+'.'+escapeHTML(goal)+' Non dimostra da solo causalità.</p></div>';
+    const bs=$("rl-before-start").value,be=$("rl-before-end").value,as=$("rl-after-start").value,ae=$("rl-after-end").value;
+    const toDay=v=>v?Date.parse(v+"T00:00:00Z"):NaN,warningList=[];
+    if(bs&&be&&as&&ae){
+      const bsd=toDay(bs),bed=toDay(be),asd=toDay(as),aed=toDay(ae);
+      if(bsd>bed||asd>aed)warningList.push("Controlla le date: l'inizio di un periodo è successivo alla sua fine.");
+      else{
+        const bdays=(bed-bsd)/86400000,adays=(aed-asd)/86400000;
+        if(bdays!==adays)warningList.push("I periodi hanno durate diverse.");
+        if(asd<=bed&&aed>=bsd)warningList.push("I periodi si sovrappongono.");
+        const implemented=$("rl-implemented-date").value;
+        if(implemented&&asd<toDay(implemented))warningList.push("Il periodo successivo inizia prima della data di implementazione registrata.");
+      }
+    }
+    const beforeLabel=bs&&be?bs+" – "+be:($("rl-before-period").value||"periodo iniziale non specificato");
+    const afterLabel=as&&ae?as+" – "+ae:($("rl-after-period").value||"periodo successivo non specificato");
+    const comparisonWarning=warningList.length?" Avvertenze: "+warningList.join(" "):"";
+    box.innerHTML='<span class="rl-result-icon">'+(better===true?"↗":better===false?"↘":"=")+'</span><div><strong>'+headline+': '+escapeHTML(change)+'</strong><p>Confronto descrittivo fra '+escapeHTML(beforeLabel)+' e '+escapeHTML(afterLabel)+'.'+escapeHTML(goal)+escapeHTML(comparisonWarning)+' Non dimostra da solo causalità.</p></div>';
   }
   function collect(){
     return {schemaVersion:"2.0",product:"Valeya Revenue Leak",planId:state.planId||makeId(),reportId:state.report?.reportId||null,reportUrl:state.report?.url||"",reportGeneratedAt:state.report?.generatedAt||null,site:state.report?.url||"",businessType:$("rl-business").value,goal:$("rl-goal").value,problem:currentProblem(),auditIssue:chosenIssue(),auditIssueId:chosenIssue()?.id||null,action:$("rl-action").value.trim(),interventionStatus:$("rl-intervention-status").value,owner:$("rl-owner").value.trim(),plannedDate:$("rl-planned-date").value,implementedDate:$("rl-implemented-date").value,workNotes:$("rl-work-notes").value.trim(),source:$("rl-source").value,kpi:$("rl-kpi").value,kpiLabel:kpiLabels[$("rl-kpi").value]||"Metrica da definire",kpiDirection:$("rl-kpi-direction").value,kpiUnit:$("rl-kpi-unit").value.trim(),window:$("rl-window").value,beforePeriod:$("rl-before-period").value.trim(),beforePeriodStart:$("rl-before-start").value,beforePeriodEnd:$("rl-before-end").value,before:$("rl-before").value,target:$("rl-target").value,afterPeriod:$("rl-after-period").value.trim(),afterPeriodStart:$("rl-after-start").value,afterPeriodEnd:$("rl-after-end").value,after:$("rl-after").value,reviewDate:$("rl-review-date").value,notes:$("rl-notes").value.trim(),measurements:state.measurements||[],status:$("rl-intervention-status").value,updatedAt:new Date().toISOString(),auditReportSnapshot:state.report?{reportId:state.report.reportId||null,url:state.report.url||"",generatedAt:state.report.generatedAt||null,strategy:state.report.strategy||null}:null};
@@ -156,7 +172,8 @@
   $("rl-manual-issue").addEventListener("input",()=>{
     if($("rl-manual-issue").value.trim()){state.selectedIssue=null;$("rl-issue-list").querySelectorAll(".rl-issue").forEach(x=>{x.classList.remove("selected");x.querySelector(".rl-issue-radio").textContent="";});}
   });
-  ["rl-before","rl-after","rl-target","rl-before-period","rl-after-period","rl-kpi-unit"].forEach(id=>$(id).addEventListener("input",updateResult));
+  ["rl-before","rl-after","rl-target","rl-before-period","rl-after-period","rl-before-start","rl-before-end","rl-after-start","rl-after-end","rl-kpi-unit"].forEach(id=>$(id).addEventListener("input",updateResult));
+  ["rl-before-start","rl-before-end","rl-after-start","rl-after-end"].forEach(id=>$(id).addEventListener("change",updateResult));
   ["rl-kpi","rl-kpi-direction"].forEach(id=>$(id).addEventListener("change",()=>{if(state.step===4)renderMeasurement();else updateResult();}));
   $("rl-save").addEventListener("click",save);$("rl-export").addEventListener("click",exportPlan);$("rl-refresh-plans").addEventListener("click",renderSavedPlans);
   $("rl-remove-audit").addEventListener("click",()=>{state.report=null;state.selectedIssue=null;$("rl-audit-source").hidden=true;$("rl-issue-count").textContent="0 rilievi importati";$("rl-issue-list").innerHTML='<div class="rl-empty">Report rimosso. Puoi descrivere manualmente il problema.</div>';});
